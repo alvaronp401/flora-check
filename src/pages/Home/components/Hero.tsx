@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Calendar, MapPin } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
+import eventArt from '../../../assets/image.png'
 
 export const Hero: React.FC = () => {
   return (
@@ -58,6 +59,21 @@ export const Hero: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Imagem Principal (Visual do Evento) */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full scale-75 animate-pulse" />
+          <div className="relative rounded-[40px] overflow-hidden border-4 border-white/10 shadow-2xl transform hover:scale-[1.02] transition-transform duration-500">
+            <img 
+              src={eventArt} 
+              alt="Trail Run Evento" 
+              className="w-full h-auto"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+        </div>
+
       </div>
     </header>
   )

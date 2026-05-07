@@ -14,7 +14,7 @@ const Home: React.FC = () => {
       {/* Seção Principal (CTA & Logo) */}
       <Hero />
 
-      {/* Seção de Programação & Instrutores */}
+      {/* Programação do Evento */}
       <Schedule />
 
       {/* Seção de Kit & Atributos Técnicos */}

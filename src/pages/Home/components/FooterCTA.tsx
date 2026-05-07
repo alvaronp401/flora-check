@@ -11,12 +11,14 @@ export const FooterCTA: React.FC = () => {
       <div className="max-w-4xl mx-auto px-6 relative z-10">
         <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-8 py-3 rounded-full mb-10">
           <span className="flex -space-x-3">
-             {[1,2,3,4,5].map(i => (
+             {[1,2,3].map(i => (
                <img 
                  key={i}
                  src={`https://i.pravatar.cc/100?u=user${i}`}
                  className="w-8 h-8 rounded-full border-2 border-[#1A0F0B] object-cover"
                  alt="Participante"
+                 loading="lazy"
+                 decoding="async"
                />
              ))}
           </span>
@@ -32,7 +34,7 @@ export const FooterCTA: React.FC = () => {
         </h3>
         
         <div className="relative inline-block group mb-12">
-          <div className="absolute inset-0 bg-blue-600 blur-[80px] opacity-20 group-hover:opacity-40 transition-opacity" />
+          <div className="absolute inset-0 bg-blue-600 blur-2xl opacity-10 group-hover:opacity-20 transition-opacity will-change-[filter]" />
           
           <Link to="/checkout">
             <Button 

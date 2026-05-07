@@ -106,6 +106,7 @@ export const Kit: React.FC = () => {
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </section>

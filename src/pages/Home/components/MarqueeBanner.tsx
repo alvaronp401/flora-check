@@ -1,19 +1,43 @@
 import React from 'react'
+import { Flame } from 'lucide-react'
 
 export const MarqueeBanner: React.FC = () => {
-  return (
-    <div className="bg-black text-white py-4 overflow-hidden border-b border-white/5 relative z-50">
-      <div className="flex animate-marquee whitespace-nowrap">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <span key={i} className="mx-8 text-[10px] md:text-xs font-black uppercase tracking-[0.4em] flex items-center gap-4">
-            <span className="w-2 h-2 bg-[#D4B996] rounded-full animate-pulse" />
-            Lote 1 Quase Esgotando
-            <span className="text-white/20">/</span>
-            Garanta sua Vaga no Maior Evento de Trail Run
-            <span className="w-2 h-2 bg-[#D4B996] rounded-full animate-pulse" />
+  // Conteúdo extraído para garantir duplicidade perfeita
+  const items = (
+    <div className="flex items-center">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="flex items-center mx-4 md:mx-8 shrink-0">
+          <span className="text-[10px] md:text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-6">
+            <Flame size={14} className="text-orange-500 fill-orange-500" />
+            QUASE ESGOTANDO -
+            GARANTA SUA VAGA NO primeiro lote
           </span>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
+  );
+
+  return (
+    <nav className="bg-black py-3 overflow-hidden whitespace-nowrap border-b border-white/10 sticky top-0 z-50 shadow-2xl">
+      <div className="flex w-max animate-marquee hover:pause will-change-transform backface-hidden">
+        {items}
+        {items}
+        {items}
+        {items}
+      </div>
+
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-25%); }
+        }
+        .animate-marquee {
+          animation: marquee 19s linear infinite;
+        }
+        .pause:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+    </nav>
   )
 }
