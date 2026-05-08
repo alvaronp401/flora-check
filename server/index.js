@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const { createClient } = require('@supabase/supabase-js');
+const ws = require('ws');
 require('dotenv').config();
 
 const app = express();
@@ -12,7 +13,13 @@ const PORT = process.env.PORT || 3001;
 // 🛡️ Configuração Supabase (Admin)
 const supabase = createClient(
   process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  {
+    auth: { persistSession: false },
+    realtime: {
+      transport: ws,
+    },
+  }
 );
 
 // 💳 Configuração Mercado Pago
@@ -20,23 +27,29 @@ const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN || '' 
 });
 
-const limiter = rateLimit({
+// 🛡️ Rate Limit Agressivo para Admin
+const adminLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  message: 'Bloqueio de segurança.'
+});
+
+const standardLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: 'Muitas requisições, tente novamente mais tarde.'
+  message: 'Muitas requisições.'
 });
 
 app.use(helmet());
-app.use(limiter);
 app.use(cors({
   origin: ['http://localhost:5173', 'https://flora-check.vercel.app'],
   methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret']
 }));
 app.use(express.json());
 
 // 🚀 Criar Preferência de Pagamento
-app.post('/create-preference', async (req, res) => {
+app.post('/create-preference', standardLimiter, async (req, res) => {
   try {
     const { registrationId, email, fullName } = req.body;
     const preference = new Preference(client);
@@ -57,53 +70,86 @@ app.post('/create-preference', async (req, res) => {
         pending: 'https://flora-check.vercel.app/checkout'
       },
       auto_return: 'approved',
-      notification_url: 'https://seu-servidor.hostinger.com/webhook', // O MP vai bater aqui! 🔔
+      notification_url: 'https://seu-servidor.hostinger.com/webhook',
     };
 
     const result = await preference.create({ body });
     res.json({ id: result.id, init_point: result.init_point });
   } catch (error) {
-    console.error('Erro MP:', error);
-    res.status(500).json({ error: 'Erro ao gerar pagamento.' });
+    res.status(500).json({ error: 'Erro de processamento.' });
   }
 });
 
-// 🔔 Webhook: O Coração da Automação 🦾
+// 🔔 Webhook
 app.post('/webhook', async (req, res) => {
   const { query } = req;
   const topic = query.topic || query.type;
-
   try {
     if (topic === 'payment') {
       const paymentId = query.id || query['data.id'];
-      
-      // 1. Consultar o pagamento oficial no MP 🛡️
       const payment = new Payment(client);
       const paymentData = await payment.get({ id: paymentId });
-
       if (paymentData.status === 'approved') {
         const registrationId = paymentData.external_reference;
-
-        // 2. Atualizar o Supabase 💎
-        const { error } = await supabase
+        await supabase
           .from('registrations')
           .update({ payment_status: 'paid', mercado_pago_id: paymentId.toString() })
           .eq('id', registrationId);
-
-        if (error) throw error;
-        console.log(`✅ Inscrição ${registrationId} confirmada via Webhook!`);
       }
     }
-    
-    res.sendStatus(200); // Responder OK para o MP não tentar de novo
+    res.sendStatus(200);
   } catch (error) {
-    console.error('Erro Webhook:', error);
     res.sendStatus(500);
   }
 });
 
+// 🏰 ROTA ADMIN BLINDADA (SILÊNCIO TOTAL) 🛡️🔐
+app.get('/admin/registrations', adminLimiter, async (req, res) => {
+  const adminSecret = req.headers['x-admin-secret'];
+  const authHeader = req.headers['authorization'];
+
+  try {
+    if (!authHeader) throw new Error();
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Sessão inválida.' });
+    }
+
+    if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET_KEY) {
+      return res.status(401).json({ error: 'Chave inválida.' });
+    }
+
+    const { data, error } = await supabase
+      .from('registrations')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const stats = {
+      total: data.length,
+      paid: data.filter(r => r.payment_status === 'paid').length,
+      pending: data.filter(r => r.payment_status === 'pending').length,
+      revenue: data.filter(r => r.payment_status === 'paid').length * 110.00,
+      shirts: {
+        PP: data.filter(r => r.shirt_size === 'PP').length,
+        P: data.filter(r => r.shirt_size === 'P').length,
+        M: data.filter(r => r.shirt_size === 'M').length,
+        G: data.filter(r => r.shirt_size === 'G').length,
+        GG: data.filter(r => r.shirt_size === 'GG').length,
+      }
+    };
+
+    res.json({ stats, registrations: data });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro administrativo.' });
+  }
+});
+
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Servidor operando!' });
+  res.sendStatus(200);
 });
 
 app.listen(PORT, () => {

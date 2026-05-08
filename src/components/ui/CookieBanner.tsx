@@ -23,7 +23,7 @@ export function CookieBanner() {
     localStorage.setItem('cookie-consent', 'true')
     setIsVisible(false)
     // Aqui você dispararia o evento de ativação de Pixels/Analytics
-    console.log('Cookies aceitos. Ativando Tracking...')
+    // Cookies aceitos.
   }
 
   if (!isVisible) return null

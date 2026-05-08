@@ -1,7 +1,8 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
@@ -48,6 +49,13 @@ interface ICheckoutForm {
 }
 
 export default function Checkout() {
+  const navigate = useNavigate()
+
+  // 🏁 Reset de Scroll: Começar sempre do topo! 🚀
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting, isValid } } = useForm<ICheckoutForm>({
     resolver: yupResolver(checkoutSchema) as any,
     mode: 'onChange'
@@ -59,6 +67,15 @@ export default function Checkout() {
 
   const onSubmit = async (data: ICheckoutForm) => {
     try {
+      // 1. Validar se o E-mail EXISTE DE VERDADE (AbstractAPI) 📧
+      const emailResponse = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=SUA_CHAVE_AQUI&email=${data.email}`);
+      const emailData = await emailResponse.json();
+
+      if (emailData.deliverability === 'UNDELIVERABLE') {
+        throw new Error('Este e-mail parece não existir. Verifique se digitou corretamente! 📧');
+      }
+
+      // 2. Salvar no Supabase (Blindagem de Dados) 🛡️
       const { data: registration, error } = await supabase
         .from('registrations')
         .insert([{
