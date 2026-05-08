@@ -1,70 +1,58 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ShieldCheck, CreditCard } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
+import atleta1 from '../../../assets/atleta1.png'
+import atleta2 from '../../../assets/atleta2.png'
+import atleta3 from '../../../assets/atleta3.png'
 
 export const FooterCTA: React.FC = () => {
   return (
-    <footer className="py-20 md:py-32 bg-[#1A0F0B] relative overflow-hidden text-center">
-      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-      
-      <div className="max-w-4xl mx-auto px-6 relative z-10">
-        <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-8 py-3 rounded-full mb-10">
-          <span className="flex -space-x-3">
-             {[1,2,3].map(i => (
-               <img 
-                 key={i}
-                 src={`https://i.pravatar.cc/100?u=user${i}`}
-                 className="w-8 h-8 rounded-full border-2 border-[#1A0F0B] object-cover"
-                 alt="Participante"
-                 loading="lazy"
-                 decoding="async"
-               />
-             ))}
-          </span>
-          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em]">
+    <footer className="bg-[#1A0F0A] py-24 border-t border-white/5 relative overflow-hidden">
+      {/* Luzes de Fundo (Blur) */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 blur-[120px] rounded-full -z-10" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#D4B996]/10 blur-[120px] rounded-full -z-10" />
+
+      <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+        {/* Badge Social Proof Restaurado */}
+        <div className="inline-flex items-center gap-4 bg-white/5 border border-white/10 px-8 py-4 rounded-full mb-10 backdrop-blur-sm">
+          <div className="flex -space-x-3">
+            {[atleta1, atleta2, atleta3].map((atleta, i) => (
+              <img 
+                key={i}
+                src={atleta} 
+                className="w-8 h-8 rounded-full border-2 border-[#1A0F0A] object-cover" 
+                alt="Participante"
+                loading="lazy"
+              />
+            ))}
+          </div>
+          <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em]">
             + de 20 participantes confirmados
           </p>
         </div>
 
-        <h3 className="text-white text-5xl md:text-8xl font-black mb-10 tracking-tighter leading-[1.05]">
-          A PRÓXIMA <br />
-          <span className="text-[#D4B996]">SUPERAÇÃO</span> <br />
-          É A SUA.
-        </h3>
+        <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter mb-8 leading-none">
+          A PRÓXIMA SUPERAÇÃO <br /> É A <span className="text-[#D4B996]">SUA</span>
+        </h2>
         
-        <div className="relative inline-block group mb-12">
-          <div className="absolute inset-0 bg-blue-600 blur-2xl opacity-10 group-hover:opacity-20 transition-opacity will-change-[filter]" />
-          
-          <Link to="/checkout">
-            <Button 
-              variant="secondary" 
-              pulse 
-              showShimmer 
-              className="text-xl md:text-2xl py-6 px-16 transform hover:-translate-y-2 transition-all duration-500 shadow-2xl"
-            >
-              QUERO MINHA VAGA
-            </Button>
-          </Link>
+        <p className="text-gray-400 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
+          As vagas são limitadas. Garanta seu kit exclusivo e faça parte da Founder Edition no coração da FLONA.
+        </p>
 
-          <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-8 mt-12">
-             <div className="flex items-center justify-center gap-3 text-xs md:text-sm text-white font-black uppercase tracking-widest bg-white/5 px-6 py-3 rounded-2xl border border-white/10">
-                <ShieldCheck size={20} className="text-blue-500 animate-pulse" /> Compra 100% Segura
-             </div>
-             <div className="flex items-center justify-center gap-3 text-xs md:text-sm text-white font-black uppercase tracking-widest bg-white/5 px-6 py-3 rounded-2xl border border-white/10">
-                <CreditCard size={20} className="text-blue-500" /> PIX ou Cartão
-             </div>
-          </div>
-        </div>
+        <Link to="/checkout" className="inline-block w-full md:w-auto">
+          <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group shadow-2xl">
+            QUERO ME INSCREVER AGORA
+          </Button>
+        </Link>
       </div>
       
       <div className="mt-20 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 max-w-6xl mx-auto px-6 relative z-10">
         <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest leading-loose">
-          © 2026 Trail Run Club • Flona Experience <br className="md:hidden" /> Todos os direitos reservados
+          © 2026 Trail & Run Club • Flona Experience <br className="md:hidden" /> Todos os direitos reservados
         </p>
         <div className="flex gap-8 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
-          <a href="#" className="hover:text-white transition-colors">Termos de Uso</a>
-          <a href="#" className="hover:text-white transition-colors">Privacidade</a>
+          <Link to="/terms" className="hover:text-white transition-colors">Termos de Uso</Link>
+          <Link to="/privacy" className="hover:text-white transition-colors">Privacidade</Link>
         </div>
       </div>
     </footer>

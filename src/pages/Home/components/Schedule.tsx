@@ -1,4 +1,7 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+import johnImg from '../../../assets/colaborador1.png'
+import aleImg from '../../../assets/colaborador3.png'
 
 const schedule = [
   { time: '07:00', event: 'Coffee break & Check-in' },
@@ -10,64 +13,82 @@ const schedule = [
 ]
 
 const instructors = [
-  { name: 'Jairon Pinheiro', handle: '@profjaironpinheiro' },
-  { name: 'Jonathas Treinador', handle: '@jonathastreinador' },
-  { name: 'Ale Adventuree', handle: '@Ale_adventuree' }
+  { 
+    name: 'Jonathas Treinador', 
+    handle: '@jonathastreinador',
+    image: johnImg
+  },
+  { 
+    name: 'Ale Adventuree', 
+    handle: '@Ale_adventuree',
+    image: aleImg
+  }
 ]
 
 export const Schedule: React.FC = () => {
   return (
-    <section className="py-32 px-6 max-w-4xl mx-auto">
-      <div className="flex flex-col items-center mb-20">
-        <span className="text-blue-600 font-black text-xs uppercase tracking-[0.3em] mb-4">O que vai rolar</span>
-        <h2 className="text-4xl md:text-6xl font-black text-center tracking-tight">PROGRAMAÇÃO</h2>
-        <div className="w-16 h-2 bg-[#D4B996] mt-8 rounded-full" />
-      </div>
-
-      <div className="grid gap-4 md:gap-6 mb-24">
-        {schedule.map((item, index) => (
-          <div 
-            key={index}
-            className="flex items-center gap-4 md:gap-8 p-4 md:p-8 bg-white border border-gray-100 rounded-[24px] md:rounded-[32px] hover:shadow-2xl hover:shadow-blue-500/5 transition-all group"
-          >
-            <div className="text-sm md:text-xl font-black text-blue-600 bg-blue-50 w-20 md:w-28 py-3 md:py-4 rounded-xl md:rounded-2xl text-center group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0">
-              {item.time}
-            </div>
-            <div className="text-base md:text-xl font-bold text-gray-700 group-hover:text-black leading-tight">
-              {item.event}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Organizadores (Placeholders limpos) */}
-      <div className="flex flex-col items-center">
-        <h3 className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 mb-12">Organizadores</h3>
-        <div className="flex justify-center flex-wrap gap-8 md:gap-16">
-          {instructors.map((instr, i) => (
-            <a 
-              key={i} 
-              href={`https://instagram.com/${instr.handle.replace('@', '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex flex-col items-center gap-4 transition-transform hover:-translate-y-2"
-            >
-              <div className="relative">
-                <div className="absolute inset-0 border-2 border-[#D4B996] rounded-full scale-110 opacity-30 group-hover:opacity-100 transition-opacity" />
-                
-                {/* Círculo Placeholder - Aguardando Foto Real */}
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-slate-50 border-2 border-slate-100 flex items-center justify-center text-slate-300 shadow-inner group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
-                  <span className="text-lg font-black uppercase">
-                    {instr.name.charAt(0)}
-                  </span>
-                </div>
-
-              </div>
-              <span className="text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-widest group-hover:text-blue-600 transition-colors">
-                {instr.handle}
+    <section className="bg-slate-50 py-24 md:py-32">
+      <div className="max-w-4xl mx-auto px-6">
+        <h2 className="text-3xl md:text-5xl font-black uppercase mb-16 tracking-tighter text-center">
+          Programação <span className="text-blue-600">Oficial</span>
+        </h2>
+        
+        <div className="space-y-4 mb-24">
+          {schedule.map((item, i) => (
+            <div key={i} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+              <span className="text-xl font-black text-blue-600 min-w-[80px]">
+                {item.time}
               </span>
-            </a>
+              <span className="text-lg md:text-xl font-bold text-slate-800 uppercase tracking-tight">
+                {item.event}
+              </span>
+            </div>
           ))}
+        </div>
+
+        {/* Condutores */}
+        <div className="flex flex-col items-center w-full">
+          <h3 className="flex flex-col items-center text-xl md:text-3xl font-black uppercase tracking-[0.4em] text-[#D4B996] leading-none mb-20 text-center w-full pl-[0.4em]">
+            <span>Conheça os</span>
+            <span>instrutores</span>
+          </h3>
+          <div className="flex justify-center gap-12 md:gap-32 w-full">
+            {instructors.map((instr, i) => (
+              <a 
+                key={i}
+                href={`https://instagram.com/${instr.handle.replace('@', '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center group w-32 md:w-40"
+              >
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white shadow-xl mb-6 overflow-hidden relative group-hover:scale-105 transition-transform duration-500 ring-4 ring-blue-50">
+                  {instr.image ? (
+                    <img 
+                      src={instr.image} 
+                      alt={instr.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-slate-100 flex items-center justify-center text-3xl font-black text-slate-300">
+                      {instr.name[0]}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <span className="text-sm font-black uppercase tracking-widest text-slate-900 mb-2 text-center leading-tight">
+                  {instr.name}
+                </span>
+                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity text-center">
+                  {instr.handle}
+                </span>
+              </a>
+            ))}
+          </div>
+          <p className="mt-12 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+            Leia os <Link to="/terms" className="text-blue-600 underline">termos de uso</Link> e <Link to="/privacy" className="text-blue-600 underline">privacidade</Link>
+          </p>
         </div>
       </div>
     </section>

@@ -1,69 +1,72 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle, Trophy, MessageCircle } from 'lucide-react'
+import { CheckCircle2, Calendar, MapPin, Trophy, ArrowRight } from 'lucide-react'
 
-/**
- * Página de Sucesso ✅
- * 
- * DESIGN PHILOSOPHY:
- * 1. Confirmação Visual: Uso de cores verdes e ícones de sucesso.
- * 2. Próximos Passos: Instruções claras para reduzir a ansiedade pós-compra.
- * 3. Gatilho de Dopamina: Parabenizar o usuário pela decisão.
- */
 export default function Success() {
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-md space-y-8">
+    <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center py-12 px-6">
+      <div className="max-w-md w-full bg-white p-10 rounded-[40px] shadow-2xl border border-gray-100 text-center relative overflow-hidden">
         
-        {/* Ícone de Sucesso Animado (CSS) */}
-        <div className="relative inline-block">
-          <div className="absolute inset-0 bg-green-100 rounded-full animate-ping opacity-20" />
-          <CheckCircle className="text-green-500 relative z-10" size={100} />
+        {/* Efeito de Confete Visual */}
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-green-500/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl" />
+
+        <div className="flex justify-center mb-8">
+          <div className="bg-green-50 p-4 rounded-full">
+            <CheckCircle2 size={60} className="text-green-500" />
+          </div>
+        </div>
+
+        <h1 className="text-4xl font-black mb-4 tracking-tight">INSCRIÇÃO CONFIRMADA!</h1>
+        <p className="text-gray-500 font-medium mb-10">Parabéns, atleta! Seu kit Founder Edition já está reservado. Prepare os tênis para a FLONA.</p>
+
+        <div className="space-y-4 mb-10">
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <Calendar className="text-gray-400" size={20} />
+            <div className="text-left">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Data do Evento</p>
+              <p className="font-bold text-sm">26 de Junho, 2024</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <MapPin className="text-gray-400" size={20} />
+            <div className="text-left">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Local de Encontro</p>
+              <p className="font-bold text-sm">Entrada Principal - FLONA</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+            <Trophy className="text-gray-400" size={20} />
+            <div className="text-left">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Sua Categoria</p>
+              <p className="font-bold text-sm">Trail Run Club - 12km</p>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4">
-          <h1 className="text-4xl font-black text-gray-900 leading-tight">
-            INSCRIÇÃO <br /> REALIZADA!
-          </h1>
-          <p className="text-gray-500 text-lg">
-            Parabéns, você deu o primeiro passo para uma experiência incrível na Flona.
-          </p>
-        </div>
-
-        <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 space-y-4">
-          <h3 className="font-bold flex items-center justify-center gap-2">
-            <Trophy className="text-yellow-600" size={18} /> O QUE ACONTECE AGORA?
-          </h3>
-          <ul className="text-sm text-gray-600 text-left space-y-3">
-            <li className="flex gap-3">
-              <span className="font-bold text-blue-600">01.</span>
-              Verifique seu e-mail (inclusive a caixa de spam).
-            </li>
-            <li className="flex gap-3">
-              <span className="font-bold text-blue-600">02.</span>
-              Salve o comprovante de pagamento.
-            </li>
-            <li className="flex gap-3">
-              <span className="font-bold text-blue-600">03.</span>
-              Nos vemos no dia 06 de Junho às 07:00!
-            </li>
-          </ul>
-        </div>
-
-        <div className="flex flex-col gap-4">
           <a 
-            href="https://wa.me/seu-numero" 
-            className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-2xl transition-all"
+            href="https://chat.whatsapp.com/seu-link-de-grupo" 
+            target="_blank" 
+            rel="noreferrer"
+            className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-green-500/20 hover:scale-[1.02] transition-transform"
           >
-            <MessageCircle size={20} /> ENTRAR NO GRUPO DO WHATSAPP
+            Entrar no Grupo de Atletas <ArrowRight size={18} />
           </a>
+          
           <Link 
             to="/" 
-            className="text-gray-400 hover:text-black font-medium text-sm transition-colors"
+            className="block text-gray-400 font-bold text-xs uppercase tracking-widest hover:text-black transition-colors pt-4"
           >
-            Voltar para o site
+            Voltar para o Início
           </Link>
         </div>
 
+        <p className="mt-10 text-[9px] text-gray-400 font-medium leading-relaxed">
+          Um e-mail de confirmação foi enviado para você. <br />
+          Dúvidas? Entre em contato com a organização.
+        </p>
       </div>
     </div>
   )
