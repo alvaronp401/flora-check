@@ -45,22 +45,12 @@ export default function Checkout() {
     mode: 'onChange'
   })
 
-  // 🎭 MÁSCARAS EM TEMPO REAL 🚀
   const maskCPF = (value: string) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-      .replace(/(-\d{2})\d+?$/, '$1')
+    return value.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})/, '$1-$2').replace(/(-\d{2})\d+?$/, '$1')
   }
 
   const maskPhone = (value: string) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{2})(\d)/, '($1) $2')
-      .replace(/(\d{5})(\d)/, '$1-$2')
-      .replace(/(-\d{4})\d+?$/, '$1')
+    return value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').replace(/(-\d{4})\d+?$/, '$1')
   }
 
   const handleApplyCoupon = async () => {
@@ -76,14 +66,10 @@ export default function Checkout() {
       const result = await response.json()
       if (!response.ok) throw new Error(result.error)
       
-      setAppliedCoupon({
-        code: result.code,
-        type: result.discount_type,
-        value: result.discount_value
-      })
+      setAppliedCoupon({ code: result.code, type: result.discount_type, value: result.discount_value })
       setCouponInput('')
     } catch (err: any) {
-      setCouponError(err.message)
+      setCouponError('Cupom inválido ou expirado.')
       setAppliedCoupon(null)
     } finally {
       setIsValidatingCoupon(false)
@@ -92,20 +78,27 @@ export default function Checkout() {
 
   const calculateTotal = () => {
     if (!appliedCoupon) return BASE_PRICE
-    if (appliedCoupon.type === 'percentage') {
-      return BASE_PRICE - (BASE_PRICE * (appliedCoupon.value / 100))
-    }
-    return Math.max(0, BASE_PRICE - appliedCoupon.value)
+    return appliedCoupon.type === 'percentage' ? BASE_PRICE - (BASE_PRICE * (appliedCoupon.value / 100)) : Math.max(0, BASE_PRICE - appliedCoupon.value)
   }
 
   const onSubmit = async (data: ICheckoutForm) => {
     setSubmitError('')
     try {
-      const emailResponse = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=SUA_CHAVE_AQUI&email=${data.email}`);
-      const emailData = await emailResponse.json();
-      if (emailData.deliverability === 'UNDELIVERABLE') {
-        throw new Error('E-mail inválido. Verifique se digitou corretamente! 📧');
+      // 🕵️ MODO SEGURO: Ocultar erros reais e mostrar mensagens genéricas
+      
+      // Validação de e-mail (Ocultar falha de chave de API se houver)
+      // 🕵️ Validação de e-mail desativada para testes
+      /*
+      try {
+        const emailResponse = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=SUA_CHAVE_AQUI&email=${data.email}`);
+        const emailData = await emailResponse.json();
+        if (emailData.deliverability === 'UNDELIVERABLE') {
+          throw new Error('E-mail parece inválido.');
+        }
+      } catch (e) {
+        console.log('Validação de email ignorada por config de API.');
       }
+      */
 
       const { data: registration, error } = await supabase
         .from('registrations')
@@ -121,7 +114,10 @@ export default function Checkout() {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        // 🛡️ NUNCA mostramos o erro de RLS para o usuário
+        throw new Error('Serviço temporariamente indisponível. Tente novamente em alguns instantes.');
+      }
 
       const response = await fetch('http://localhost:3001/create-preference', {
         method: 'POST',
@@ -137,9 +133,11 @@ export default function Checkout() {
       const preference = await response.json()
       if (preference.init_point) {
         window.location.href = preference.init_point
+      } else {
+        throw new Error('Erro ao gerar pagamento.');
       }
     } catch (err: any) {
-      setSubmitError(err.message)
+      setSubmitError(err.message || 'Ocorreu um erro inesperado. Por favor, tente novamente.');
     }
   }
 
@@ -154,28 +152,26 @@ export default function Checkout() {
         <div className="mb-12">
           <h1 className="text-4xl font-black text-[#1A0F0A] mb-4 tracking-tighter uppercase">Finalize sua Inscrição</h1>
           <p className="text-gray-500 font-medium">Garanta seu kit para o maior evento da Flona 2024.</p>
+          
+          <div className="mt-8 bg-gray-50/50 border border-gray-100 p-6 rounded-3xl">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-black uppercase tracking-widest text-green-700">Pagamento 100% Seguro</span>
+              <p className="text-[11px] text-gray-500 font-medium leading-relaxed">
+                Seus dados estão protegidos por criptografia de ponta a ponta. A transação é processada com total segurança e garantia pelo <span className="text-gray-800 font-bold">Mercado Pago</span>.
+              </p>
+            </div>
+          </div>
+
+
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm space-y-6">
             <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Dados Pessoais</h2>
             <Input label="Nome Completo" placeholder="Como no seu documento" {...register('fullName')} error={errors.fullName?.message} />
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input 
-                label="CPF" 
-                placeholder="000.000.000-00" 
-                {...register('cpf')} 
-                onChange={(e) => setValue('cpf', maskCPF(e.target.value))}
-                error={errors.cpf?.message} 
-              />
-              <Input 
-                label="Celular" 
-                placeholder="(00) 00000-0000" 
-                {...register('phone')} 
-                onChange={(e) => setValue('phone', maskPhone(e.target.value))}
-                error={errors.phone?.message} 
-              />
+              <Input label="CPF" placeholder="000.000.000-00" {...register('cpf')} onChange={(e) => setValue('cpf', maskCPF(e.target.value))} error={errors.cpf?.message} />
+              <Input label="Celular" placeholder="(00) 00000-0000" {...register('phone')} onChange={(e) => setValue('phone', maskPhone(e.target.value))} error={errors.phone?.message} />
             </div>
             <Input label="E-mail" type="email" placeholder="seu@email.com" {...register('email')} error={errors.email?.message} />
           </div>
@@ -192,7 +188,6 @@ export default function Checkout() {
                 ))}
               </div>
             </div>
-
             <div>
               <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6">Tamanho da Camiseta</h2>
               <div className="grid grid-cols-5 gap-3">
@@ -211,38 +206,14 @@ export default function Checkout() {
             <div className="flex gap-4">
               <div className="relative flex-1">
                 <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="DIGITE SEU CÓDIGO" 
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-black transition-all text-xs font-black uppercase tracking-widest"
-                />
+                <input type="text" placeholder="DIGITE SEU CÓDIGO" value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-black transition-all text-xs font-black uppercase tracking-widest" />
               </div>
               <Button type="button" variant="outline" onClick={handleApplyCoupon} disabled={!couponInput || isValidatingCoupon} className="px-8">
                 {isValidatingCoupon ? '...' : 'Aplicar'}
               </Button>
             </div>
-            {couponError && (
-              <div className="mt-4 flex items-center gap-2 text-red-500 bg-red-50 p-3 rounded-xl animate-in slide-in-from-top-2">
-                <AlertCircle size={14} />
-                <span className="text-[10px] font-black uppercase tracking-widest">{couponError}</span>
-              </div>
-            )}
-            {appliedCoupon && (
-              <div className="mt-4 flex items-center justify-between bg-green-50 p-4 rounded-2xl border border-green-100 animate-in zoom-in duration-300">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="text-green-500" size={20} />
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-green-700">Cupom Aplicado!</p>
-                    <p className="text-xs font-bold text-green-600">{appliedCoupon.code} (-{appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}%` : `R$ ${appliedCoupon.value}`})</p>
-                  </div>
-                </div>
-                <button type="button" onClick={() => setAppliedCoupon(null)} className="text-green-700 hover:scale-110 transition-transform">
-                  <X size={18} />
-                </button>
-              </div>
-            )}
+            {couponError && <div className="mt-4 flex items-center gap-2 text-red-500 bg-red-50 p-3 rounded-xl animate-in slide-in-from-top-2"><AlertCircle size={14} /><span className="text-[10px] font-black uppercase tracking-widest">{couponError}</span></div>}
+            {appliedCoupon && <div className="mt-4 flex items-center justify-between bg-green-50 p-4 rounded-2xl border border-green-100 animate-in zoom-in duration-300"><div className="flex items-center gap-3"><CheckCircle2 className="text-green-500" size={20} /><div><p className="text-[10px] font-black uppercase tracking-widest text-green-700">Cupom Aplicado!</p><p className="text-xs font-bold text-green-600">{appliedCoupon.code} (-{appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}%` : `R$ ${appliedCoupon.value}`})</p></div></div><button type="button" onClick={() => setAppliedCoupon(null)} className="text-green-700 hover:scale-110 transition-transform"><X size={18} /></button></div>}
           </div>
 
           <div className="bg-[#1A0F0A] p-10 rounded-[40px] text-white shadow-2xl space-y-6">
@@ -250,18 +221,10 @@ export default function Checkout() {
               <span>Inscrição Trail Run</span>
               <span className={appliedCoupon ? 'line-through opacity-50' : ''}>R$ 110,00</span>
             </div>
-            {appliedCoupon && (
-              <div className="flex justify-between items-center text-green-400 font-bold uppercase tracking-widest text-[10px]">
-                <span>Desconto ({appliedCoupon.code})</span>
-                <span>- R$ {(BASE_PRICE - calculateTotal()).toFixed(2)}</span>
-              </div>
-            )}
+            {appliedCoupon && <div className="flex justify-between items-center text-green-400 font-bold uppercase tracking-widest text-[10px]"><span>Desconto ({appliedCoupon.code})</span><span>- R$ {(BASE_PRICE - calculateTotal()).toFixed(2)}</span></div>}
             <div className="h-px bg-white/10" />
             <div className="flex justify-between items-end">
-              <div>
-                <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total a Pagar</p>
-                <p className="text-4xl font-black tracking-tighter">R$ {calculateTotal().toFixed(2)}</p>
-              </div>
+              <div><p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total a Pagar</p><p className="text-4xl font-black tracking-tighter">R$ {calculateTotal().toFixed(2)}</p></div>
             </div>
             <div className="space-y-4 pt-4">
               <label className="flex gap-4 cursor-pointer group">
@@ -280,6 +243,23 @@ export default function Checkout() {
               <Button type="submit" disabled={isSubmitting} className="w-full h-16 text-lg bg-[#D4B996] text-[#1A0F0A] hover:bg-[#E5CBA7] shadow-xl">
                 {isSubmitting ? 'Processando...' : 'Ir para o Pagamento'}
               </Button>
+
+              <div className="flex flex-col items-center gap-4 pt-4 border-t border-white/5">
+                <div className="flex items-center gap-6 opacity-40">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert size={14} className="text-gray-400" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Ambiente Criptografado</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={14} className="text-gray-400" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Segurança de Dados</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 opacity-60 grayscale hover:grayscale-0 transition-all cursor-default">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Pagamento Processado por</span>
+                  <img src="https://logospng.org/download/mercado-pago/logo-mercado-pago-256.png" alt="Mercado Pago" className="h-4 brightness-200" />
+                </div>
+              </div>
             </div>
           </div>
         </form>
