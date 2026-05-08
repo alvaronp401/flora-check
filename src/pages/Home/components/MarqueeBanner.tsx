@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Flame } from 'lucide-react'
+import { API_URL } from '../../../config/api'
 
 export const MarqueeBanner: React.FC = () => {
   const [lotName, setLotName] = useState('PRIMEIRO')
 
   useEffect(() => {
     const fetchStatus = () => {
-      fetch('http://localhost:3001/event-status')
+      fetch(`${API_URL}/event-status`)
         .then(res => res.json())
         .then(data => {
           if (data.currentLot) setLotName(data.currentLot.name)

@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom'
 import { Calendar, MapPin } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import eventArt from '../../../assets/image.png'
+import { API_URL } from '../../../config/api'
 
 export const Hero: React.FC = () => {
   const [eventStatus, setEventStatus] = useState({ available: 50, occupied: 0 })
 
   useEffect(() => {
     const fetchStatus = () => {
-      fetch('http://localhost:3001/event-status')
+      fetch(`${API_URL}/event-status`)
         .then(res => res.json())
         .then(data => setEventStatus(data))
         .catch(err => console.error('Erro ao buscar vagas:', err))
@@ -75,19 +76,27 @@ export const Hero: React.FC = () => {
               </span>
             </div>
 
-            <Link to="/checkout" className="w-full md:w-auto">
-              <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group shadow-2xl">
-                GARANTIR MINHA VAGA
-              </Button>
-            </Link>
+            {eventStatus.available > 0 ? (
+              <Link to="/checkout" className="w-full md:w-auto">
+                <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group shadow-2xl">
+                  GARANTIR MINHA VAGA
+                </Button>
+              </Link>
+            ) : (
+              <div className="w-full md:w-auto opacity-50 cursor-not-allowed">
+                <Button variant="secondary" className="w-full md:w-auto text-xl py-6 px-16 bg-gray-600 border-gray-500 shadow-none grayscale">
+                  VAGAS ESGOTADAS
+                </Button>
+              </div>
+            )}
 
 
-            <div className="flex flex-row flex-wrap justify-center md:justify-start gap-4 md:gap-8 items-center text-gray-400 font-bold text-xs md:text-sm">
-              <span className="flex items-center gap-3 bg-white/5 px-5 py-3 rounded-xl border border-white/5 whitespace-nowrap">
-                <Calendar size={22} className="text-[#D4B996]" /> 06 de JUNHO
+            <div className="flex flex-row flex-nowrap justify-center md:justify-start gap-2 md:gap-8 items-center text-gray-400 font-bold text-[10px] md:text-sm w-full overflow-x-hidden">
+              <span className="flex items-center gap-2 md:gap-3 bg-white/5 px-3 md:px-5 py-3 rounded-xl border border-white/5 whitespace-nowrap">
+                <Calendar size={18} className="text-[#D4B996]" /> 06 de JUNHO
               </span>
-              <span className="flex items-center gap-3 bg-white/5 px-5 py-3 rounded-xl border border-white/5 whitespace-nowrap">
-                <MapPin size={22} className="text-[#D4B996]" /> FLONA - BRASÍLIA
+              <span className="flex items-center gap-2 md:gap-3 bg-white/5 px-3 md:px-5 py-3 rounded-xl border border-white/5 whitespace-nowrap">
+                <MapPin size={18} className="text-[#D4B996]" /> FLONA - BRASÍLIA
               </span>
             </div>
           </div>

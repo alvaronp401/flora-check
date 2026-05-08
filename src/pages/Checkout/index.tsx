@@ -7,6 +7,7 @@ import { ArrowLeft, Ticket, CheckCircle2, AlertCircle, X, ShieldAlert } from 'lu
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { supabase } from '../../lib/supabase'
+import { API_URL } from '../../config/api'
 
 interface ICheckoutForm {
   fullName: string;
@@ -42,7 +43,7 @@ export default function Checkout() {
   // 📡 Buscar status e Gerenciar Timer Persistente
   useEffect(() => {
     const fetchStatus = () => {
-      fetch('http://localhost:3001/event-status')
+      fetch(`${API_URL}/event-status`)
         .then(res => res.json())
         .then(data => setEventStatus(data))
         .catch(err => console.error('Erro ao buscar status:', err))
@@ -109,7 +110,7 @@ export default function Checkout() {
     setIsValidatingCoupon(true)
     setCouponError('')
     try {
-      const response = await fetch('http://localhost:3001/validate-coupon', {
+      const response = await fetch(`${API_URL}/validate-coupon`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponInput })
@@ -137,24 +138,15 @@ export default function Checkout() {
       setSubmitError('Sua reserva expirou! Por favor, recarregue a página para tentar uma nova vaga.')
       return
     }
+    // 🛡️ TRAVA SÊNIOR: Verifica se ainda há vagas antes de tentar qualquer coisa
+    if (eventStatus.available <= 0) {
+      setSubmitError('Desculpe, as vagas acabaram de esgotar!')
+      return
+    }
+
     setSubmitError('')
     try {
-      // 🕵️ MODO SEGURO: Ocultar erros reais e mostrar mensagens genéricas
-      
-      // Validação de e-mail (Ocultar falha de chave de API se houver)
-      // 🕵️ Validação de e-mail desativada para testes
-      /*
-      try {
-        const emailResponse = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=SUA_CHAVE_AQUI&email=${data.email}`);
-        const emailData = await emailResponse.json();
-        if (emailData.deliverability === 'UNDELIVERABLE') {
-          throw new Error('E-mail parece inválido.');
-        }
-      } catch (e) {
-        console.log('Validação de email ignorada por config de API.');
-      }
-      */
-
+      // 1. Busca a inscrição no Supabase
       const { data: registration, error } = await supabase
         .from('registrations')
         .insert([{
@@ -165,18 +157,16 @@ export default function Checkout() {
           gender: data.gender,
           shirt_size: data.shirtSize,
           payment_status: 'pending',
-          coupon_code: appliedCoupon?.code || null, // 🎟️ Salva para o Webhook processar depois
+          coupon_code: appliedCoupon?.code || null,
           reserved_until: new Date(Date.now() + 15 * 60 * 1000).toISOString()
         }])
         .select()
         .single()
 
-      if (error) {
-        // 🛡️ NUNCA mostramos o erro de RLS para o usuário
-        throw new Error('Serviço temporariamente indisponível. Tente novamente em alguns instantes.');
-      }
+      if (error) throw new Error('Serviço temporariamente indisponível.');
 
-      const response = await fetch('http://localhost:3001/create-preference', {
+      // 2. Cria preferência no Mercado Pago
+      const response = await fetch(`${API_URL}/create-preference`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -189,14 +179,36 @@ export default function Checkout() {
 
       const preference = await response.json()
       if (preference.init_point) {
-        localStorage.removeItem('checkout_expiry') // 🧹 Limpa para não travar compras futuras
+        localStorage.removeItem('checkout_expiry')
         window.location.href = preference.init_point
       } else {
-        throw new Error('Erro ao gerar pagamento.');
+        throw new Error(preference.error || 'Erro ao gerar pagamento.');
       }
     } catch (err: any) {
-      setSubmitError(err.message || 'Ocorreu um erro inesperado. Por favor, tente novamente.');
+      setSubmitError(err.message || 'Ocorreu um erro inesperado.');
     }
+  }
+
+  // 🛡️ TELA DE SOLD OUT (SÊNIOR UX)
+  if (eventStatus.available <= 0 && !isSubmitting) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF9] flex flex-col items-center justify-center px-6">
+        <div className="max-w-md w-full bg-white p-12 rounded-[48px] border border-gray-100 shadow-2xl text-center space-y-8 animate-in zoom-in duration-500">
+          <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto">
+            <ShieldAlert size={48} className="text-red-500" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-black text-[#1A0F0A] uppercase tracking-tighter mb-4">Vagas Esgotadas!</h1>
+            <p className="text-gray-500 font-medium leading-relaxed">
+              Infelizmente todas as vagas para a <span className="font-bold text-[#1A0F0A]">Founder Edition 2026</span> foram preenchidas.
+            </p>
+          </div>
+          <Link to="/" className="block">
+            <Button variant="secondary" className="w-full h-16 text-lg">Voltar para Home</Button>
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (

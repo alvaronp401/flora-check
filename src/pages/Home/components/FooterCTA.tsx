@@ -4,6 +4,7 @@ import { Button } from '../../../components/ui/Button'
 import atleta1 from '../../../assets/atleta1.png'
 import atleta2 from '../../../assets/atleta2.png'
 import atleta3 from '../../../assets/atleta3.png'
+import { API_URL } from '../../../config/api'
 
 export const FooterCTA: React.FC = () => {
   const [eventStatus, setEventStatus] = useState({ available: 50, occupied: 0 })
@@ -11,7 +12,7 @@ export const FooterCTA: React.FC = () => {
   useEffect(() => {
     // 📡 Buscar status das vagas ao carregar
     const fetchStatus = () => {
-      fetch('http://localhost:3001/event-status')
+      fetch(`${API_URL}/event-status`)
         .then(res => res.json())
         .then(data => setEventStatus(data))
         .catch(err => console.error('Erro ao buscar status:', err))
@@ -55,13 +56,21 @@ export const FooterCTA: React.FC = () => {
         </p>
 
         <div className="flex flex-col items-center gap-6">
-          <Link to="/checkout" className="inline-block w-full md:w-auto">
-            <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group shadow-2xl">
-              QUERO ME INSCREVER AGORA
-            </Button>
-          </Link>
+          {eventStatus.available > 0 ? (
+            <Link to="/checkout" className="inline-block w-full md:w-auto">
+              <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group shadow-2xl">
+                QUERO ME INSCREVER AGORA
+              </Button>
+            </Link>
+          ) : (
+            <div className="w-full md:w-auto opacity-50 cursor-not-allowed">
+              <Button variant="secondary" className="w-full md:w-auto text-xl py-6 px-16 bg-gray-600 border-gray-500 shadow-none grayscale">
+                INSCRIÇÕES ENCERRADAS
+              </Button>
+            </div>
+          )}
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4B996] animate-pulse">
-            Apenas {eventStatus.available} vagas restantes
+            {eventStatus.available > 0 ? `Apenas ${eventStatus.available} vagas restantes` : 'Lote Final Esgotado'}
           </p>
         </div>
 

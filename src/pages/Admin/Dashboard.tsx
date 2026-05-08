@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
+import { API_URL } from '../../config/api'
 
 interface Stats {
   total: number
@@ -74,7 +75,7 @@ export default function Dashboard() {
     const token = session.data.session?.access_token
 
     try {
-      const resReg = await fetch(`http://localhost:3001/admin/registrations?page=${page}&limit=10`, {
+      const resReg = await fetch(`${API_URL}/admin/registrations?page=${page}&limit=10`, {
         headers: { 'Authorization': `Bearer ${token}`, 'x-admin-secret': adminSecret || '' }
       })
       const dataReg = await resReg.json()
@@ -82,7 +83,7 @@ export default function Dashboard() {
       setRegistrations(dataReg.registrations)
       setTotalPages(dataReg.totalPages)
 
-      const resCoup = await fetch('http://localhost:3001/admin/coupons', {
+      const resCoup = await fetch(`${API_URL}/admin/coupons`, {
         headers: { 'x-admin-secret': adminSecret || '' }
       })
       const dataCoup = await resCoup.json()
@@ -99,7 +100,7 @@ export default function Dashboard() {
     e.preventDefault()
     setErrorMsg('')
     try {
-      const res = await fetch('http://localhost:3001/admin/coupons', {
+      const res = await fetch(`${API_URL}/admin/coupons`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret || '' },
         body: JSON.stringify({
@@ -122,7 +123,7 @@ export default function Dashboard() {
   const handleDeleteCoupon = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este cupom? Atletas que já o aplicaram podem ter erros no checkout.')) return
     try {
-      const res = await fetch(`http://localhost:3001/admin/coupons/${id}`, {
+      const res = await fetch(`${API_URL}/admin/coupons/${id}`, {
         method: 'DELETE',
         headers: { 'x-admin-secret': adminSecret || '' }
       })
@@ -135,7 +136,7 @@ export default function Dashboard() {
   // 🚀 NOVAS FUNÇÕES DE SIMULAÇÃO (SÊNIOR)
   const handleConfirmPayment = async (id: string) => {
     if (!confirm('Deseja confirmar o pagamento deste atleta manualmente?')) return
-    const res = await fetch(`http://localhost:3001/admin/confirm-payment/${id}`, {
+    const res = await fetch(`${API_URL}/admin/confirm-payment/${id}`, {
       method: 'POST',
       headers: { 'x-admin-secret': adminSecret || '' }
     })
@@ -144,7 +145,7 @@ export default function Dashboard() {
 
   const handleResetStatus = async (id: string) => {
     if (!confirm('Deseja voltar este atleta para PENDENTE para testar novamente?')) return
-    const res = await fetch(`http://localhost:3001/admin/reset-status/${id}`, {
+    const res = await fetch(`${API_URL}/admin/reset-status/${id}`, {
       method: 'POST',
       headers: { 'x-admin-secret': adminSecret || '' }
     })
@@ -152,7 +153,7 @@ export default function Dashboard() {
   }
 
   const handleSimulateDemand = async (count: number) => {
-    const res = await fetch('http://localhost:3001/admin/simulate-demand', {
+    const res = await fetch(`${API_URL}/admin/simulate-demand`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret || '' },
       body: JSON.stringify({ count })
@@ -162,7 +163,7 @@ export default function Dashboard() {
 
   const handleResetEvent = async () => {
     if (!confirm('⚠️ ATENÇÃO: Isso vai apagar TODAS as inscrições. Tem certeza?')) return
-    const res = await fetch('http://localhost:3001/admin/reset-event', {
+    const res = await fetch(`${API_URL}/admin/reset-event`, {
       method: 'POST',
       headers: { 'x-admin-secret': adminSecret || '' }
     })

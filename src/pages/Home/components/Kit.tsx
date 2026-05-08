@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { API_URL } from '../../../config/api'
 
 export const Kit: React.FC = () => {
   const [price, setPrice] = useState(110)
 
   useEffect(() => {
     const fetchStatus = () => {
-      fetch('http://localhost:3001/event-status')
+      fetch(`${API_URL}/event-status`)
         .then(res => res.json())
         .then(data => {
           if (data.currentLot) setPrice(data.currentLot.price)
