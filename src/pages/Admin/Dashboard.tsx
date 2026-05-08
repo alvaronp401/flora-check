@@ -132,6 +132,43 @@ export default function Dashboard() {
     }
   }
 
+  // 🚀 NOVAS FUNÇÕES DE SIMULAÇÃO (SÊNIOR)
+  const handleConfirmPayment = async (id: string) => {
+    if (!confirm('Deseja confirmar o pagamento deste atleta manualmente?')) return
+    const res = await fetch(`http://localhost:3001/admin/confirm-payment/${id}`, {
+      method: 'POST',
+      headers: { 'x-admin-secret': adminSecret || '' }
+    })
+    if (res.ok) fetchData()
+  }
+
+  const handleResetStatus = async (id: string) => {
+    if (!confirm('Deseja voltar este atleta para PENDENTE para testar novamente?')) return
+    const res = await fetch(`http://localhost:3001/admin/reset-status/${id}`, {
+      method: 'POST',
+      headers: { 'x-admin-secret': adminSecret || '' }
+    })
+    if (res.ok) fetchData()
+  }
+
+  const handleSimulateDemand = async (count: number) => {
+    const res = await fetch('http://localhost:3001/admin/simulate-demand', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret || '' },
+      body: JSON.stringify({ count })
+    })
+    if (res.ok) fetchData()
+  }
+
+  const handleResetEvent = async () => {
+    if (!confirm('⚠️ ATENÇÃO: Isso vai apagar TODAS as inscrições. Tem certeza?')) return
+    const res = await fetch('http://localhost:3001/admin/reset-event', {
+      method: 'POST',
+      headers: { 'x-admin-secret': adminSecret || '' }
+    })
+    if (res.ok) fetchData()
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     localStorage.removeItem('admin_secret')
@@ -209,6 +246,47 @@ export default function Dashboard() {
               ))}
             </div>
 
+            {/* 🧪 PAINEL DE SIMULAÇÃO SÊNIOR */}
+            <div className="bg-[#1A0F0A] p-6 rounded-[32px] border border-white/5 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="bg-[#D4B996] p-2 rounded-xl">
+                  <RefreshCw className="text-[#1A0F0A]" size={20} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-[#D4B996] uppercase tracking-widest mb-0.5">Laboratório de Testes</p>
+                  <p className="text-xs text-gray-400 font-medium">Simule o comportamento dos lotes e pagamentos</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div className="flex items-center bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                  <input 
+                    type="number" 
+                    id="customSim"
+                    placeholder="QTD" 
+                    className="w-16 bg-transparent text-white text-xs font-black px-3 py-3 outline-none"
+                  />
+                  <button 
+                    onClick={() => {
+                      const val = (document.getElementById('customSim') as HTMLInputElement).value;
+                      if (val) handleSimulateDemand(parseInt(val));
+                    }}
+                    className="bg-[#D4B996] text-[#1A0F0A] p-3 hover:bg-white transition-all"
+                  >
+                    <RefreshCw size={14} />
+                  </button>
+                </div>
+                <button onClick={() => handleSimulateDemand(10)} className="flex-1 md:flex-none border border-white/10 text-white hover:bg-white/5 text-[10px] font-black uppercase tracking-widest py-3 px-6 rounded-xl transition-all">
+                  +10
+                </button>
+                <button onClick={() => handleSimulateDemand(20)} className="flex-1 md:flex-none border border-white/10 text-white hover:bg-white/5 text-[10px] font-black uppercase tracking-widest py-3 px-6 rounded-xl transition-all">
+                  +20
+                </button>
+                <button onClick={handleResetEvent} className="flex-1 md:flex-none border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[10px] font-black uppercase tracking-widest py-3 px-6 rounded-xl transition-all">
+                  Zerar
+                </button>
+              </div>
+            </div>
+
             <div className="bg-white rounded-[32px] md:rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
               <div className="p-6 md:p-8 border-b border-gray-50 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="relative w-full md:w-96">
@@ -243,9 +321,27 @@ export default function Dashboard() {
                           <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-[10px] font-black">{r.shirt_size}</span>
                         </td>
                         <td className="px-8 py-6 text-center">
-                          <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${r.payment_status === 'paid' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
-                            {r.payment_status === 'paid' ? 'Pago' : 'Pendente'}
-                          </span>
+                          {r.payment_status === 'paid' ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <span className="bg-green-50 text-green-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                Pago
+                              </span>
+                              <button 
+                                onClick={() => handleResetStatus(r.id)}
+                                className="p-2 text-gray-400 hover:text-blue-500 transition-colors"
+                                title="Voltar para Pendente"
+                              >
+                                <RefreshCw size={14} />
+                              </button>
+                            </div>
+                          ) : (
+                            <button 
+                              onClick={() => handleConfirmPayment(r.id)}
+                              className="bg-orange-50 text-orange-600 hover:bg-orange-100 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 mx-auto"
+                            >
+                              <Clock size={12} /> Confirmar
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
