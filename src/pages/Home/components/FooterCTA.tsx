@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import atleta1 from '../../../assets/atleta1.png'
@@ -6,6 +6,21 @@ import atleta2 from '../../../assets/atleta2.png'
 import atleta3 from '../../../assets/atleta3.png'
 
 export const FooterCTA: React.FC = () => {
+  const [eventStatus, setEventStatus] = useState({ available: 50, occupied: 0 })
+
+  useEffect(() => {
+    // 📡 Buscar status das vagas ao carregar
+    const fetchStatus = () => {
+      fetch('http://localhost:3001/event-status')
+        .then(res => res.json())
+        .then(data => setEventStatus(data))
+        .catch(err => console.error('Erro ao buscar status:', err))
+    }
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <footer className="bg-[#1A0F0A] py-24 border-t border-white/5 relative overflow-hidden">
       {/* Luzes de Fundo (Blur) */}
@@ -39,11 +54,17 @@ export const FooterCTA: React.FC = () => {
           As vagas são limitadas. Garanta seu kit exclusivo e faça parte da Founder Edition no coração da FLONA.
         </p>
 
-        <Link to="/checkout" className="inline-block w-full md:w-auto">
-          <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group shadow-2xl">
-            QUERO ME INSCREVER AGORA
-          </Button>
-        </Link>
+        <div className="flex flex-col items-center gap-6">
+          <Link to="/checkout" className="inline-block w-full md:w-auto">
+            <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group shadow-2xl">
+              QUERO ME INSCREVER AGORA
+            </Button>
+          </Link>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4B996] animate-pulse">
+            Apenas {eventStatus.available} vagas restantes
+          </p>
+        </div>
+
       </div>
       
       <div className="mt-20 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 max-w-6xl mx-auto px-6 relative z-10">

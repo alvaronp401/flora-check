@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Ticket, CheckCircle2, AlertCircle, X, ShieldAlert } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
@@ -34,7 +34,58 @@ export default function Checkout() {
   const [couponError, setCouponError] = useState('')
   const [submitError, setSubmitError] = useState('')
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(600)
+  const [eventStatus, setEventStatus] = useState({ available: 50, occupied: 0 })
+  const navigate = useNavigate() // 🚀 Para redirecionar
   const BASE_PRICE = 110.00
+
+  // 📡 Buscar status e Gerenciar Timer Persistente
+  useEffect(() => {
+    const fetchStatus = () => {
+      fetch('http://localhost:3001/event-status')
+        .then(res => res.json())
+        .then(data => setEventStatus(data))
+        .catch(err => console.error('Erro ao buscar status:', err))
+    }
+    fetchStatus()
+    const intervalStatus = setInterval(fetchStatus, 5000)
+
+    // ⏳ Lógica de Persistência do Timer
+    const now = Date.now()
+    const savedExpiry = localStorage.getItem('checkout_expiry')
+    
+    let expiryTime: number
+    if (savedExpiry && parseInt(savedExpiry) > now) {
+      expiryTime = parseInt(savedExpiry)
+    } else {
+      expiryTime = now + 600 * 1000 // 10 min a partir de agora
+      localStorage.setItem('checkout_expiry', expiryTime.toString())
+    }
+
+    const updateTimer = () => {
+      const remaining = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000))
+      setTimeLeft(remaining)
+      
+      if (remaining <= 0) {
+        localStorage.removeItem('checkout_expiry')
+        navigate('/') // 🏃‍♂️ Expulsa para a Home
+      }
+    }
+
+    updateTimer()
+    const timerInterval = setInterval(updateTimer, 1000)
+
+    return () => {
+      clearInterval(intervalStatus)
+      clearInterval(timerInterval)
+    }
+  }, [navigate])
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`
+  }
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -82,6 +133,10 @@ export default function Checkout() {
   }
 
   const onSubmit = async (data: ICheckoutForm) => {
+    if (timeLeft <= 0) {
+      setSubmitError('Sua reserva expirou! Por favor, recarregue a página para tentar uma nova vaga.')
+      return
+    }
     setSubmitError('')
     try {
       // 🕵️ MODO SEGURO: Ocultar erros reais e mostrar mensagens genéricas
@@ -109,7 +164,9 @@ export default function Checkout() {
           phone: data.phone,
           gender: data.gender,
           shirt_size: data.shirtSize,
-          payment_status: 'pending'
+          payment_status: 'pending',
+          coupon_code: appliedCoupon?.code || null, // 🎟️ Salva para o Webhook processar depois
+          reserved_until: new Date(Date.now() + 15 * 60 * 1000).toISOString()
         }])
         .select()
         .single()
@@ -132,6 +189,7 @@ export default function Checkout() {
 
       const preference = await response.json()
       if (preference.init_point) {
+        localStorage.removeItem('checkout_expiry') // 🧹 Limpa para não travar compras futuras
         window.location.href = preference.init_point
       } else {
         throw new Error('Erro ao gerar pagamento.');
@@ -143,6 +201,36 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] pb-20">
+      {/* ⏳ Header de Urgência Fixo */}
+      <div className="sticky top-0 z-50 bg-[#1A0F0A] text-white py-3 px-6 shadow-2xl overflow-hidden">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`w-2 h-2 rounded-full ${timeLeft < 60 ? 'bg-red-500 animate-ping' : 'bg-green-500'}`} />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Reserva Garantida</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="flex flex-col items-end">
+              <span className="text-[8px] text-gray-500 font-bold uppercase">Tempo Restante</span>
+              <span className={`text-sm font-black tabular-nums ${timeLeft < 60 ? 'text-red-500 animate-pulse' : 'text-[#D4B996]'}`}>
+                {formatTime(timeLeft)}
+              </span>
+            </div>
+            <div className="h-8 w-px bg-white/10" />
+            <div className="flex flex-col items-end">
+              <span className="text-[8px] text-gray-500 font-bold uppercase">Vagas Restantes</span>
+              <span className="text-sm font-black text-white">
+                {eventStatus.available} <span className="text-[10px] text-gray-500">/ 50</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        {/* Barra de Progresso do Tempo */}
+        <div 
+          className="absolute bottom-0 left-0 h-[2px] bg-[#D4B996] transition-all duration-1000 ease-linear"
+          style={{ width: `${(timeLeft / 600) * 100}%` }}
+        />
+      </div>
+
       <div className="max-w-2xl mx-auto px-6 pt-12">
         <Link to="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-[#1A0F0A] transition-colors mb-12 group">
           <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
@@ -243,25 +331,9 @@ export default function Checkout() {
               <Button type="submit" disabled={isSubmitting} className="w-full h-16 text-lg bg-[#D4B996] text-[#1A0F0A] hover:bg-[#E5CBA7] shadow-xl">
                 {isSubmitting ? 'Processando...' : 'Ir para o Pagamento'}
               </Button>
-
-              <div className="flex flex-col items-center gap-4 pt-4 border-t border-white/5">
-                <div className="flex items-center gap-6 opacity-40">
-                  <div className="flex items-center gap-2">
-                    <ShieldAlert size={14} className="text-gray-400" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Ambiente Criptografado</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 size={14} className="text-gray-400" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Segurança de Dados</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 opacity-60 grayscale hover:grayscale-0 transition-all cursor-default">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Pagamento Processado por</span>
-                  <img src="https://logospng.org/download/mercado-pago/logo-mercado-pago-256.png" alt="Mercado Pago" className="h-4 brightness-200" />
-                </div>
-              </div>
             </div>
           </div>
+
         </form>
       </div>
     </div>

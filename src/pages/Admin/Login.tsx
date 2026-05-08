@@ -31,7 +31,7 @@ export default function AdminLogin() {
       }
     } catch (error: any) {
       // Erro genérico para não dar pistas
-      alert('Sistema indisponível.')
+      console.error('Falha na autenticação administrativa.')
     } finally {
       setLoading(false)
     }

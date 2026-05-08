@@ -59,6 +59,8 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showSensitive, setShowSensitive] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   
   // Form de Cupom
   const [newCoupon, setNewCoupon] = useState({ code: '', type: 'percentage', value: 0, limit: 10 })
@@ -72,12 +74,13 @@ export default function Dashboard() {
     const token = session.data.session?.access_token
 
     try {
-      const resReg = await fetch('http://localhost:3001/admin/registrations', {
+      const resReg = await fetch(`http://localhost:3001/admin/registrations?page=${page}&limit=10`, {
         headers: { 'Authorization': `Bearer ${token}`, 'x-admin-secret': adminSecret || '' }
       })
       const dataReg = await resReg.json()
       setStats(dataReg.stats)
       setRegistrations(dataReg.registrations)
+      setTotalPages(dataReg.totalPages)
 
       const resCoup = await fetch('http://localhost:3001/admin/coupons', {
         headers: { 'x-admin-secret': adminSecret || '' }
@@ -90,7 +93,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!adminSecret) navigate('/organizacao')
     fetchData()
-  }, [])
+  }, [page]) // 🛰️ Recarregar quando mudar de página
 
   const handleCreateCoupon = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -125,7 +128,7 @@ export default function Dashboard() {
       })
       if (res.ok) fetchData()
     } catch (error) {
-      alert('Erro ao excluir.')
+      console.error('Erro ao excluir cupom:', error)
     }
   }
 
@@ -248,6 +251,27 @@ export default function Dashboard() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+              <div className="p-6 md:p-8 bg-gray-50/30 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                  Página {page} de {totalPages}
+                </p>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1 || loading}
+                    className="px-6 py-3 bg-white border border-gray-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-black transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    Anterior
+                  </button>
+                  <button 
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages || loading}
+                    className="px-6 py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  >
+                    Próximo
+                  </button>
+                </div>
               </div>
             </div>
           </>

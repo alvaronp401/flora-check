@@ -1,10 +1,24 @@
-import React from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Calendar, MapPin } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import eventArt from '../../../assets/image.png'
 
 export const Hero: React.FC = () => {
+  const [eventStatus, setEventStatus] = useState({ available: 50, occupied: 0 })
+
+  useEffect(() => {
+    const fetchStatus = () => {
+      fetch('http://localhost:3001/event-status')
+        .then(res => res.json())
+        .then(data => setEventStatus(data))
+        .catch(err => console.error('Erro ao buscar vagas:', err))
+    }
+
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 5000) // 🛰️ Atualiza a cada 5 segundos
+    return () => clearInterval(interval)
+  }, [])
   return (
     <header className="relative py-12 md:py-24 px-6 overflow-hidden bg-[#4B2C20]">
       <div className="max-w-6xl mx-auto relative z-10 grid md:grid-cols-2 gap-10 items-center">
@@ -48,16 +62,25 @@ export const Hero: React.FC = () => {
             <div className="absolute -bottom-10 -left-10 h-20 w-40 bg-white/10 blur-3xl -z-10 rounded-full rotate-2 animate-pulse" />
           </div>
           
-          <p className="text-base md:text-xl text-gray-300 mb-10 max-w-md leading-relaxed font-medium">
+          <p className="text-base md:text-xl text-gray-300 mb-6 max-w-md leading-relaxed font-medium">
             Explore a Floresta Nacional em uma jornada única de superação, saúde e conexão com a natureza.
           </p>
           
-          <div className="flex flex-col items-center md:items-start gap-6 mb-12 w-full">
+          <div className="flex flex-col items-center md:items-start gap-4 mb-12 w-full">
+            {/* 📉 Contador de Vagas em Tempo Real */}
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]" />
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-white/60">
+                Contagem ao vivo: <span className="text-[#D4B996]">{eventStatus.available} vagas restantes</span>
+              </span>
+            </div>
+
             <Link to="/checkout" className="w-full md:w-auto">
               <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group shadow-2xl">
                 GARANTIR MINHA VAGA
               </Button>
             </Link>
+
 
             <div className="flex flex-row flex-wrap justify-center md:justify-start gap-4 md:gap-8 items-center text-gray-400 font-bold text-xs md:text-sm">
               <span className="flex items-center gap-3 bg-white/5 px-5 py-3 rounded-xl border border-white/5 whitespace-nowrap">
