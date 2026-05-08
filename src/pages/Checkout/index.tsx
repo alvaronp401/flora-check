@@ -35,9 +35,9 @@ export default function Checkout() {
   const [submitError, setSubmitError] = useState('')
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
   const [timeLeft, setTimeLeft] = useState(600)
-  const [eventStatus, setEventStatus] = useState({ available: 50, occupied: 0 })
+  const [eventStatus, setEventStatus] = useState<any>({ available: 50, occupied: 0, currentLot: { name: 'PRIMEIRO', price: 110 } })
   const navigate = useNavigate() // 🚀 Para redirecionar
-  const BASE_PRICE = 110.00
+  const BASE_PRICE = eventStatus.currentLot?.price || 110.00
 
   // 📡 Buscar status e Gerenciar Timer Persistente
   useEffect(() => {
@@ -306,8 +306,8 @@ export default function Checkout() {
 
           <div className="bg-[#1A0F0A] p-10 rounded-[40px] text-white shadow-2xl space-y-6">
             <div className="flex justify-between items-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
-              <span>Inscrição Trail Run</span>
-              <span className={appliedCoupon ? 'line-through opacity-50' : ''}>R$ 110,00</span>
+              <span>Inscrição Trail Run - {eventStatus.currentLot?.name} LOTE</span>
+              <span className={appliedCoupon ? 'line-through opacity-50' : ''}>R$ {BASE_PRICE.toFixed(2)}</span>
             </div>
             {appliedCoupon && <div className="flex justify-between items-center text-green-400 font-bold uppercase tracking-widest text-[10px]"><span>Desconto ({appliedCoupon.code})</span><span>- R$ {(BASE_PRICE - calculateTotal()).toFixed(2)}</span></div>}
             <div className="h-px bg-white/10" />

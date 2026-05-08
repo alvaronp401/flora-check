@@ -1,6 +1,22 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 export const Kit: React.FC = () => {
+  const [price, setPrice] = useState(110)
+
+  useEffect(() => {
+    const fetchStatus = () => {
+      fetch('http://localhost:3001/event-status')
+        .then(res => res.json())
+        .then(data => {
+          if (data.currentLot) setPrice(data.currentLot.price)
+        })
+        .catch(err => console.error('Erro ao buscar status:', err))
+    }
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <section className="bg-[#4B2C20] py-32 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 relative z-10">
@@ -25,7 +41,7 @@ export const Kit: React.FC = () => {
                 <div className="absolute inset-0 border-2 border-white/40 rounded-[100%] scale-105 md:scale-110 -rotate-3 transition-transform duration-500" />
                 <div className="absolute inset-0 border-2 border-white/20 rounded-[100%] scale-110 md:scale-125 rotate-6 transition-transform duration-700" />
                 <span className="text-5xl md:text-8xl font-black tracking-tighter leading-none">
-                  R$ 110,00
+                  R$ {price.toFixed(2).replace('.', ',')}
                 </span>
               </div>
             </div>

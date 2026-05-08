@@ -8,7 +8,6 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const BASE_PRICE = 110.00;
 const MAX_CAPACITY = 50; // 🚀 LIMITE DEFINIDO PELO MESTRE
 
 // 🛡️ Configuração Supabase (Admin)
@@ -31,11 +30,15 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// 🎫 Lógica de Lotes Sênior
+const getLotInfo = (occupied) => {
+  if (occupied < 15) return { name: 'PRIMEIRO', price: 110 };
+  if (occupied < 30) return { name: 'SEGUNDO', price: 120 };
+  return { name: 'TERCEIRO', price: 130 };
+};
+
 // 📊 FUNÇÃO DE CÁLCULO DE VAGAS (LÓGICA SÊNIOR)
 async function getEventStatus() {
-  const now = new Date().toISOString();
-  
-  // Contar vagas ocupadas (Pagas OU Reservadas ativas)
   const { data, error } = await supabase
     .from('registrations')
     .select('payment_status, reserved_until');
@@ -47,11 +50,14 @@ async function getEventStatus() {
     (r.payment_status === 'pending' && r.reserved_until && new Date(r.reserved_until) > new Date())
   ).length;
 
+  const lot = getLotInfo(occupied);
+
   return {
     capacity: MAX_CAPACITY,
     occupied,
     available: Math.max(0, MAX_CAPACITY - occupied),
-    is_sold_out: occupied >= MAX_CAPACITY
+    is_sold_out: occupied >= MAX_CAPACITY,
+    currentLot: lot
   };
 }
 
@@ -76,7 +82,7 @@ app.post('/create-preference', async (req, res) => {
       return res.status(400).json({ error: 'Desculpe, as vagas acabaram de esgotar!' });
     }
 
-    let finalPrice = BASE_PRICE;
+    let finalPrice = status.currentLot.price;
     if (couponCode) {
       const { data: coupon } = await supabase.from('coupons').select('*').eq('code', couponCode.toUpperCase()).single();
       if (coupon && coupon.is_active && coupon.used_count < coupon.usage_limit) {

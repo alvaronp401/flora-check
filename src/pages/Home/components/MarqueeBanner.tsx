@@ -1,8 +1,23 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Flame } from 'lucide-react'
 
 export const MarqueeBanner: React.FC = () => {
-  // Conteúdo extraído para garantir duplicidade perfeita
+  const [lotName, setLotName] = useState('PRIMEIRO')
+
+  useEffect(() => {
+    const fetchStatus = () => {
+      fetch('http://localhost:3001/event-status')
+        .then(res => res.json())
+        .then(data => {
+          if (data.currentLot) setLotName(data.currentLot.name)
+        })
+        .catch(err => console.error('Erro ao buscar status:', err))
+    }
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
   const items = (
     <div className="flex items-center">
       {[1, 2, 3, 4].map((i) => (
@@ -10,7 +25,7 @@ export const MarqueeBanner: React.FC = () => {
           <span className="text-[10px] md:text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-6">
             <Flame size={14} className="text-orange-500 fill-orange-500" />
             QUASE ESGOTANDO -
-            GARANTA SUA VAGA NO primeiro lote
+            GARANTA SUA VAGA NO {lotName} LOTE
           </span>
         </div>
       ))}
