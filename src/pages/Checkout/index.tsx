@@ -170,10 +170,9 @@ export default function Checkout() {
       return
     }
 
-    setSubmitError('')
     try {
       // 1. Busca a inscrição no Supabase
-      const { data: registration, error } = await supabase
+      const { data: registration, error: dbError } = await supabase
         .from('registrations')
         .insert([{
           full_name: data.fullName,
@@ -192,7 +191,10 @@ export default function Checkout() {
         .select()
         .single()
 
-      if (error) throw new Error('Serviço temporariamente indisponível.');
+      if (dbError) {
+        console.error('❌ Erro no Banco de Dados:', dbError);
+        throw new Error('Não conseguimos reservar sua vaga. Verifique seus dados e tente novamente.');
+      }
 
       // 2. Cria preferência no Mercado Pago
       const response = await fetch(`${API_URL}/create-preference`, {
@@ -206,15 +208,22 @@ export default function Checkout() {
         })
       })
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao conectar com o Mercado Pago.');
+      }
+
       const preference = await response.json()
       if (preference.init_point) {
         localStorage.removeItem('checkout_expiry')
-        window.location.href = preference.init_point
+        // 🚀 REDIRECIONAMENTO DE SÊNIOR: Garante que o navegador vá para o MP
+        window.location.assign(preference.init_point)
       } else {
-        throw new Error(preference.error || 'Erro ao gerar pagamento.');
+        throw new Error('O link de pagamento não foi gerado. Tente novamente.');
       }
     } catch (err: any) {
-      setSubmitError(err.message || 'Ocorreu um erro inesperado.');
+      console.error('❌ FALHA NO CHECKOUT:', err);
+      setSubmitError(err.message || 'Erro inesperado ao processar sua inscrição.');
     }
   }
 
