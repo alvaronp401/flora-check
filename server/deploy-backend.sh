@@ -27,15 +27,14 @@ npm install --production
 
 echo "🐳 Gerenciando containers Docker..."
 
-# Limpeza preventiva para evitar o erro de 'ContainerConfig'
-docker rm -f flora-checkout-backend || true
-
 # Tenta usar 'docker compose' (v2), se falhar usa 'docker-compose' (v1)
 if docker compose version >/dev/null 2>&1; then
     echo "Usando Docker Compose V2..."
+    docker compose down || true
     docker compose up -d --build
 else
     echo "Usando Docker Compose V1..."
+    docker-compose down || true
     docker-compose up -d --build
 fi
 
