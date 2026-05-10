@@ -7,9 +7,10 @@ set -e # Para se der erro
 
 echo "🎬 Iniciando deploy do Frontend..."
 
-# 1. Ajuste o caminho para a pasta onde o projeto foi clonado
-# No CloudPanel, assumimos que você está na raiz do htdocs
+# 1. Caminhos no servidor (Usuário trailrunclub)
+# O repositório está na raiz do htdocs
 PROJECT_DIR="/home/trailrunclub/htdocs"
+# A pasta que o CloudPanel exibe o site
 SITE_PUBLIC_DIR="/home/trailrunclub/htdocs/trailrunclub.com.br"
 
 cd $PROJECT_DIR
@@ -17,15 +18,15 @@ cd $PROJECT_DIR
 echo "📥 Baixando as últimas atualizações do GitHub..."
 git pull origin main
 
-echo "📦 Instalando dependências..."
+echo "📦 Instalando dependências (npm install)..."
+# Usamos '--include=dev' porque o Vite é uma dependência de desenvolvimento
 npm install
 
-echo "🏗️ Gerando o Build de produção..."
-# O Vite vai criar a pasta 'dist'
+echo "🏗️ Gerando o Build de produção (npm run build)..."
 npm run build
 
-echo "🧹 Limpando e atualizando a pasta do site..."
-# Move os arquivos do build para a pasta que o CloudPanel expõe
+echo "🧹 Limpando a pasta pública e movendo o novo build..."
+# Remove o index.html antigo e coloca os arquivos novos do 'dist/'
 rm -rf $SITE_PUBLIC_DIR/*
 cp -r dist/* $SITE_PUBLIC_DIR/
 
