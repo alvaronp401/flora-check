@@ -4,7 +4,7 @@ const { body, validationResult } = require('express-validator');
 const { supabase, mpClient } = require('../config/clients');
 const { getEventStatus } = require('../services/eventService');
 const { finalizeRegistration } = require('../services/registrationService');
-const { sensitiveLimiter } = require('../index');
+const { sensitiveLimiter } = require('../middleware/rateLimit');
 
 const router = Router();
 

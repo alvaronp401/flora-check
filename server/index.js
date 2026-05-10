@@ -1,28 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
-// 🛡️ Segurança: Limite de requisições Global (Prevenção de DoS)
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Limite de 100 requisições por IP
-  message: { error: 'Muitas requisições. Tente novamente em 15 minutos.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// 💰 Segurança: Limite Restrito para Pagamentos e Cupons (Prevenção de Brute Force)
-const sensitiveLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minuto
-  max: 5, // Apenas 5 tentativas por minuto
-  message: { error: 'Limite de tentativas atingido. Aguarde 1 minuto.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-module.exports = { globalLimiter, sensitiveLimiter };
+const { globalLimiter, sensitiveLimiter } = require('./middleware/rateLimit');
 
 // 📦 Rotas
 const eventRoutes = require('./routes/eventRoutes');
