@@ -61,7 +61,7 @@ export default function Checkout() {
         .catch(err => console.error('Erro ao buscar status:', err))
     }
     fetchStatus()
-    const intervalStatus = setInterval(fetchStatus, 5000)
+    const intervalStatus = setInterval(fetchStatus, 15000)
 
     // ⏳ Lógica de Persistência do Timer
     const now = Date.now()

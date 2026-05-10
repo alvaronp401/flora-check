@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 // 🛡️ Segurança: Limite de requisições Global (Prevenção de DoS)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Limite de 100 requisições por IP
+  max: 2000, // Limite aumentado para evitar bloqueios no polling do frontend
   message: { error: 'Muitas requisições. Tente novamente em 15 minutos.' },
   standardHeaders: true,
   legacyHeaders: false,
