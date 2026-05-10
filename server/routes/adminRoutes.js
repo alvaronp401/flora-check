@@ -6,26 +6,13 @@ const { finalizeRegistration } = require('../services/registrationService');
 const router = Router();
 
 // 📊 GET /admin/registrations — Lista paginada de inscritos com stats
-router.get('/admin/registrations', async (req, res) => {
-  const adminSecret = req.headers['x-admin-secret'];
-  const authHeader = req.headers['authorization'];
+router.get('/admin/registrations', adminAuth, async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const start = (page - 1) * limit;
   const end = start + limit - 1;
 
   try {
-    // Verifica sessão do usuário autenticado
-    if (!authHeader) throw new Error('Token ausente.');
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) return res.status(401).json({ error: 'Sessão inválida.' });
-
-    // Verifica chave de admin
-    if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET_KEY) {
-      return res.status(401).json({ error: 'Chave inválida.' });
-    }
-
     // Busca com paginação e contagem total
     const { data, error, count } = await supabase
       .from('registrations')

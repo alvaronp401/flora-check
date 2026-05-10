@@ -1,16 +1,30 @@
 const { Router } = require('express');
 const { Preference } = require('mercadopago');
+const { body, validationResult } = require('express-validator');
 const { supabase, mpClient } = require('../config/clients');
 const { getEventStatus } = require('../services/eventService');
 const { finalizeRegistration } = require('../services/registrationService');
+const { sensitiveLimiter } = require('../index');
 
 const router = Router();
 
 // 🚀 POST /create-preference
 // Valida estoque, aplica cupom, reserva vaga e gera link de pagamento
-router.post('/create-preference', async (req, res) => {
-  try {
-    const { registrationId, email, fullName, couponCode } = req.body;
+router.post('/create-preference', 
+  sensitiveLimiter,
+  [
+    body('registrationId').isUUID().withMessage('ID de inscrição inválido.'),
+    body('email').isEmail().withMessage('E-mail inválido.'),
+    body('fullName').isLength({ min: 3 }).withMessage('Nome muito curto.'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { registrationId, email, fullName, couponCode } = req.body;
 
     // 🛡️ Verificação atômica de vaga no momento do clique
     const status = await getEventStatus();
