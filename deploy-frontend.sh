@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # 🚀 SCRIPT DE DEPLOY AUTOMÁTICO - FRONTEND (FLORA CHECKOUT)
-# Professor Sênior: Modo Blindado 🛡️
+# Professor Sênior: Modo Segurança Máxima 🛡️
 
-set -e # Para se der erro
+set -e 
 
 echo "🎬 Iniciando deploy do Frontend..."
 
-# 1. Caminhos no servidor (Usuário trailrunclub)
-# O repositório está na raiz do htdocs
-PROJECT_DIR="/home/trailrunclub/htdocs"
-# A pasta que o CloudPanel exibe o site
+# 1. Caminhos Organizados
+# O código fonte fica na pasta 'repo'
+PROJECT_DIR="/home/trailrunclub/htdocs/repo"
+# A pasta pública que o mundo vê
 SITE_PUBLIC_DIR="/home/trailrunclub/htdocs/trailrunclub.com.br"
 
 cd $PROJECT_DIR
@@ -18,15 +18,14 @@ cd $PROJECT_DIR
 echo "📥 Baixando as últimas atualizações do GitHub..."
 git pull origin main
 
-echo "📦 Instalando dependências (npm install)..."
-# Usamos '--include=dev' porque o Vite é uma dependência de desenvolvimento
+echo "📦 Instalando dependências..."
 npm install
 
-echo "🏗️ Gerando o Build de produção (npm run build)..."
+echo "🏗️ Gerando o Build de produção..."
 npm run build
 
-echo "🧹 Limpando a pasta pública e movendo o novo build..."
-# Remove o index.html antigo e coloca os arquivos novos do 'dist/'
+echo "🧹 Limpando e atualizando a pasta pública..."
+# Remove tudo da pasta do site e coloca o novo build
 rm -rf $SITE_PUBLIC_DIR/*
 cp -r dist/* $SITE_PUBLIC_DIR/
 
