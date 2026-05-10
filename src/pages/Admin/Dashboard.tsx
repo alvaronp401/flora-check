@@ -1,48 +1,41 @@
-import { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { 
   Users, 
   CheckCircle, 
   Clock, 
   DollarSign, 
-  LogOut, 
-  RefreshCw, 
-  Download, 
   Search, 
-  ShieldCheck, 
-  Eye, 
-  EyeOff,
-  Ticket,
-  Plus,
-  Trash2,
-  Percent,
+  Download, 
+  RefreshCw, 
+  Ticket, 
+  Plus, 
+  Trash2, 
+  Percent, 
   CircleDollarSign,
-  AlertCircle
+  AlertCircle,
+  Settings,
+  LogOut,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
-import { API_URL } from '../../config/api'
 
-interface Stats {
-  total: number
-  paid: number
-  pending: number
-  revenue: number
-  shirts: { [key: string]: number }
-}
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 interface Registration {
   id: string
   full_name: string
-  cpf: string
   email: string
+  cpf: string
   phone: string
-  emergency_phone?: string
-  blood_type?: string
-  medication?: string
   shirt_size: string
   payment_status: string
   created_at: string
+  emergency_phone?: string
+  blood_type?: string
+  medication?: string
 }
 
 interface Coupon {
@@ -52,94 +45,70 @@ interface Coupon {
   discount_value: number
   usage_limit: number
   used_count: number
-  is_active: boolean
+}
+
+interface Stats {
+  total: number
+  paid: number
+  pending: number
+  revenue: number
 }
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<'registrations' | 'coupons'>('registrations')
+  const [activeTab, setActiveTab] = useState<'registrations' | 'coupons' | 'settings'>('registrations')
   const [stats, setStats] = useState<Stats | null>(null)
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [showSensitive, setShowSensitive] = useState(false)
-  const [errorMsg, setErrorMsg] = useState('')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [showSensitive, setShowSensitive] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
   
   // Form de Cupom
   const [newCoupon, setNewCoupon] = useState({ code: '', type: 'percentage', value: 0, limit: 10 })
   
+  // Configurações de Taxas
+  const [feeSettings, setFeeSettings] = useState({ name: 'Seguro Aventura', price: 5.00 })
+  const [isUpdatingFee, setIsUpdatingFee] = useState(false)
+  
   const navigate = useNavigate()
   const adminSecret = localStorage.getItem('admin_secret')
 
+  useEffect(() => {
+    if (!adminSecret) {
+      navigate('/organizacao')
+      return
+    }
+    fetchData()
+  }, [page, activeTab])
+
   const fetchData = async () => {
     setLoading(true)
-    const session = await supabase.auth.getSession()
-    const token = session.data.session?.access_token
-
     try {
-      const resReg = await fetch(`${API_URL}/admin/registrations?page=${page}&limit=10`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'x-admin-secret': adminSecret || '' }
-      })
-      const dataReg = await resReg.json()
-      setStats(dataReg.stats)
-      setRegistrations(dataReg.registrations)
-      setTotalPages(dataReg.totalPages)
-
-      const resCoup = await fetch(`${API_URL}/admin/coupons`, {
-        headers: { 'x-admin-secret': adminSecret || '' }
-      })
-      const dataCoup = await resCoup.json()
-      if (Array.isArray(dataCoup)) setCoupons(dataCoup)
-    } catch (error) { /* Silêncio */ } finally { setLoading(false) }
-  }
-
-  useEffect(() => {
-    if (!adminSecret) navigate('/organizacao')
-    fetchData()
-  }, [page]) // 🛰️ Recarregar quando mudar de página
-
-  const handleCreateCoupon = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrorMsg('')
-    try {
-      const res = await fetch(`${API_URL}/admin/coupons`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret || '' },
-        body: JSON.stringify({
-          code: newCoupon.code,
-          discount_type: newCoupon.type,
-          discount_value: newCoupon.value,
-          usage_limit: newCoupon.limit
-        })
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      const headers = { 'x-admin-secret': adminSecret || '' }
       
-      setNewCoupon({ code: '', type: 'percentage', value: 0, limit: 10 })
-      fetchData()
-    } catch (error: any) {
-      setErrorMsg(error.message)
-    }
-  }
+      // Busca unificada de inscritos e stats
+      const res = await fetch(`${API_URL}/admin/registrations?page=${page}&limit=10`, { headers })
+      const data = await res.json()
+      
+      setRegistrations(data.registrations)
+      setStats(data.stats)
+      setTotalPages(data.totalPages)
 
-  const handleDeleteCoupon = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este cupom? Atletas que já o aplicaram podem ter erros no checkout.')) return
-    try {
-      const res = await fetch(`${API_URL}/admin/coupons/${id}`, {
-        method: 'DELETE',
-        headers: { 'x-admin-secret': adminSecret || '' }
-      })
-      if (res.ok) fetchData()
+      // Cupons (Rota com prefixo /coupon)
+      const coupRes = await fetch(`${API_URL}/coupon/admin/coupons`, { headers })
+      const coupData = await coupRes.json()
+      setCoupons(Array.isArray(coupData) ? coupData : [])
     } catch (error) {
-      console.error('Erro ao excluir cupom:', error)
+      console.error('Erro ao carregar dados:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  // 🚀 NOVAS FUNÇÕES DE SIMULAÇÃO (SÊNIOR)
   const handleConfirmPayment = async (id: string) => {
-    if (!confirm('Deseja confirmar o pagamento deste atleta manualmente?')) return
     const res = await fetch(`${API_URL}/admin/confirm-payment/${id}`, {
       method: 'POST',
       headers: { 'x-admin-secret': adminSecret || '' }
@@ -147,8 +116,47 @@ export default function Dashboard() {
     if (res.ok) fetchData()
   }
 
+  const handleCreateCoupon = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrorMsg('')
+    
+    // 🛡️ MAPEAMENTO SÊNIOR: Frontend -> Backend DTO
+    const couponData = {
+      code: newCoupon.code,
+      discount_type: newCoupon.type,
+      discount_value: newCoupon.value,
+      usage_limit: newCoupon.limit
+    }
+
+    const res = await fetch(`${API_URL}/coupon/admin/coupons`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-admin-secret': adminSecret || '' 
+      },
+      body: JSON.stringify(couponData)
+    })
+    
+    if (res.ok) {
+      setNewCoupon({ code: '', type: 'percentage', value: 0, limit: 10 })
+      fetchData()
+    } else {
+      const data = await res.json()
+      setErrorMsg(data.error || 'Erro ao criar cupom')
+    }
+  }
+
+  const handleDeleteCoupon = async (id: string) => {
+    if (!confirm('Excluir este cupom?')) return
+    const res = await fetch(`${API_URL}/coupon/admin/coupons/${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-secret': adminSecret || '' }
+    })
+    if (res.ok) fetchData()
+  }
+
   const handleResetStatus = async (id: string) => {
-    if (!confirm('Deseja voltar este atleta para PENDENTE para testar novamente?')) return
+    if (!confirm('Deseja voltar este atleta para PENDENTE?')) return
     const res = await fetch(`${API_URL}/admin/reset-status/${id}`, {
       method: 'POST',
       headers: { 'x-admin-secret': adminSecret || '' }
@@ -166,12 +174,42 @@ export default function Dashboard() {
   }
 
   const handleResetEvent = async () => {
-    if (!confirm('⚠️ ATENÇÃO: Isso vai apagar TODAS as inscrições. Tem certeza?')) return
+    if (!confirm('ATENCAO: Isso vai apagar TODAS as inscricoes. Tem certeza?')) return
     const res = await fetch(`${API_URL}/admin/reset-event`, {
       method: 'POST',
       headers: { 'x-admin-secret': adminSecret || '' }
     })
     if (res.ok) fetchData()
+  }
+
+  const handleUpdateFee = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsUpdatingFee(true)
+    setErrorMsg('')
+    try {
+      const res = await fetch(`${API_URL}/admin/settings`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-secret': adminSecret || '' 
+        },
+        body: JSON.stringify({
+          key: 'insurance_fee',
+          value: feeSettings
+        })
+      })
+
+      if (res.ok) {
+        alert('Configurações salvas com sucesso!')
+        fetchData()
+      } else {
+        throw new Error('Falha ao salvar')
+      }
+    } catch (error: any) {
+      setErrorMsg('Erro ao salvar configuração.')
+    } finally {
+      setIsUpdatingFee(false)
+    }
   }
 
   const handleLogout = async () => {
@@ -228,9 +266,9 @@ export default function Dashboard() {
     return val.replace(/./g, '*')
   }
 
-  const filteredRegistrations = registrations.filter(r => 
-    r.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.cpf.includes(searchTerm)
+  const filteredRegistrations = (registrations || []).filter(r => 
+    r.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.cpf?.includes(searchTerm)
   )
 
   return (
@@ -240,7 +278,7 @@ export default function Dashboard() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-4 w-full md:w-auto">
               <div className="bg-[#D4B996] p-2 md:p-3 rounded-2xl shrink-0">
-                <ShieldCheck className="text-[#1A0F0A]" size={24} />
+                <Users className="text-[#1A0F0A]" size={24} />
               </div>
               <h1 className="text-lg md:text-2xl font-black uppercase tracking-tighter leading-none">
                 Centro de Comando <span className="block md:inline text-[#D4B996]">Flona</span>
@@ -249,10 +287,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
               <button onClick={() => setShowSensitive(!showSensitive)} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
                 {showSensitive ? <EyeOff size={16} /> : <Eye size={16} />}
-                <span className="hidden md:inline">{showSensitive ? 'Ocultar Dados' : 'Ver Dados'}</span>
-              </button>
-              <button onClick={fetchData} className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all">
-                <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+                <span className="hidden md:inline">Ver Dados</span>
               </button>
               <button onClick={handleLogout} className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <LogOut size={16} />
@@ -270,6 +305,9 @@ export default function Dashboard() {
           </button>
           <button onClick={() => setActiveTab('coupons')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'coupons' ? 'bg-white text-black shadow-sm' : 'text-gray-400'}`}>
             <Ticket size={16} /> Cupons
+          </button>
+          <button onClick={() => setActiveTab('settings')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'settings' ? 'bg-white text-black shadow-sm' : 'text-gray-400'}`}>
+            <Settings size={16} /> Configuracoes
           </button>
         </div>
 
@@ -294,14 +332,13 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {/* 🧪 PAINEL DE SIMULAÇÃO SÊNIOR */}
             <div className="bg-[#1A0F0A] p-6 rounded-[32px] border border-white/5 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-4">
                 <div className="bg-[#D4B996] p-2 rounded-xl">
                   <RefreshCw className="text-[#1A0F0A]" size={20} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-[#D4B996] uppercase tracking-widest mb-0.5">Laboratório de Testes</p>
+                  <p className="text-[10px] font-black text-[#D4B996] uppercase tracking-widest mb-0.5">Laboratorio de Testes</p>
                   <p className="text-xs text-gray-400 font-medium">Simule o comportamento dos lotes e pagamentos</p>
                 </div>
               </div>
@@ -402,7 +439,7 @@ export default function Dashboard() {
               </div>
               <div className="p-6 md:p-8 bg-gray-50/30 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                  Página {page} de {totalPages}
+                  Pagina {page} de {totalPages}
                 </p>
                 <div className="flex items-center gap-3">
                   <button 
@@ -417,18 +454,20 @@ export default function Dashboard() {
                     disabled={page === totalPages || loading}
                     className="px-6 py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                   >
-                    Próximo
+                    Proximo
                   </button>
                 </div>
               </div>
             </div>
           </>
-        ) : (
+        ) : activeTab === 'coupons' ? (
           <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8 md:gap-12">
             <div className="lg:col-span-1">
               <div className="bg-white p-8 rounded-[32px] md:rounded-[40px] border border-gray-100 shadow-sm sticky top-32">
                 <div className="flex items-center gap-3 mb-8 text-[#1A0F0A]">
-                  <Plus className="bg-black text-white p-1 rounded-lg" size={24} />
+                  <div className="bg-black text-white p-1 rounded-lg">
+                    <Plus size={24} />
+                  </div>
                   <h2 className="text-lg font-black uppercase tracking-tighter">Novo Cupom</h2>
                 </div>
                 <form onSubmit={handleCreateCoupon} className="space-y-6">
@@ -438,7 +477,7 @@ export default function Dashboard() {
                     </div>
                   )}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Código</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Codigo</label>
                     <input type="text" placeholder="EX: FLONA20" className="w-full bg-gray-50 border border-gray-50 rounded-2xl p-4 outline-none focus:border-black transition-all text-xs font-black uppercase tracking-widest" value={newCoupon.code} onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})} required />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -502,6 +541,64 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-2xl mx-auto w-full">
+            <div className="bg-white p-8 md:p-12 rounded-[40px] border border-gray-100 shadow-sm space-y-10">
+              <div className="flex items-center gap-4 text-[#1A0F0A]">
+                <div className="bg-emerald-50 p-3 rounded-2xl">
+                  <CircleDollarSign className="text-emerald-500" size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black uppercase tracking-tighter">Taxas Obrigatorias</h2>
+                  <p className="text-xs text-gray-400 font-medium">Configure as taxas cobradas automaticamente no checkout</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleUpdateFee} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Nome da Taxa</label>
+                    <input 
+                      type="text" 
+                      value={feeSettings.name}
+                      onChange={(e) => setFeeSettings({...feeSettings, name: e.target.value})}
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-5 outline-none focus:border-black transition-all text-xs font-black uppercase tracking-widest"
+                      placeholder="Ex: Seguro Aventura"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Valor Unitario (R$)</label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      value={feeSettings.price}
+                      onChange={(e) => setFeeSettings({...feeSettings, price: Number(e.target.value)})}
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-5 outline-none focus:border-black transition-all text-xs font-black"
+                      placeholder="5.00"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100 flex items-start gap-4">
+                  <AlertCircle className="text-blue-500 shrink-0" size={20} />
+                  <p className="text-[10px] text-blue-700 font-bold leading-relaxed uppercase">
+                    Esta taxa sera somada ao valor do lote no momento do pagamento. 
+                    Certifique-se de que o nome seja claro para o atleta (ex: Seguro Aventura).
+                  </p>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  disabled={isUpdatingFee}
+                  className="w-full h-16 bg-[#1A0F0A] text-white hover:bg-gray-800 shadow-xl"
+                >
+                  {isUpdatingFee ? 'Salvando...' : 'Salvar Alteracoes'}
+                </Button>
+              </form>
             </div>
           </div>
         )}

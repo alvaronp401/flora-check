@@ -32,8 +32,14 @@ router.post('/create-preference',
       return res.status(400).json({ error: 'Desculpe, as vagas acabaram de esgotar!' });
     }
 
-    // 💰 Preço começa no valor do lote atual (não mais um valor fixo)
+    // 💰 Preço começa no valor do lote atual
     let finalPrice = status.currentLot.price;
+
+    // 🛡️ Soma as taxas obrigatórias (ex: Seguro Aventura)
+    if (status.fees && Array.isArray(status.fees)) {
+      const feesTotal = status.fees.reduce((acc, fee) => acc + fee.price, 0);
+      finalPrice += feesTotal;
+    }
 
     // 🎟️ Aplica desconto de cupom se válido
     if (couponCode) {
@@ -68,7 +74,11 @@ router.post('/create-preference',
 
     // 🏦 Cria preferência no Mercado Pago
     const preference = new Preference(mpClient);
-    const body = {
+    
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+
+    const preferenceBody = {
       items: [{
         id: 'kit-trail-run-2024',
         title: 'Inscrição Trail Run Club',
@@ -79,15 +89,15 @@ router.post('/create-preference',
       payer: { email, name: fullName },
       external_reference: registrationId,
       back_urls: {
-        success: 'https://flora-check.vercel.app/success',
-        failure: 'https://flora-check.vercel.app/checkout',
-        pending: 'https://flora-check.vercel.app/checkout'
+        success: `${frontendUrl}/success`,
+        failure: `${frontendUrl}/checkout`,
+        pending: `${frontendUrl}/checkout`
       },
       auto_return: 'approved',
-      notification_url: 'https://flora-trail-run-api.onrender.com/webhook'
+      notification_url: `${backendUrl}/webhook`
     };
 
-    const result = await preference.create({ body });
+    const result = await preference.create({ body: preferenceBody });
     res.json({ id: result.id, init_point: result.init_point, expires_at: reservedUntil });
   } catch (error) {
     console.error('❌ ERRO NO PAGAMENTO:', error);

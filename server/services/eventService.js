@@ -23,12 +23,35 @@ async function getEventStatus() {
 
   const lot = getLotInfo(occupied);
 
+  // 🛡️ BUSCA DINÂMICA DE TAXAS (Com Fallback de Segurança)
+  let fees = [{ id: 'insurance', name: 'Seguro Aventura', price: 5.00 }];
+  
+  try {
+    const { data: settings } = await supabase
+      .from('event_settings')
+      .select('value')
+      .eq('key', 'insurance_fee')
+      .single();
+
+    if (settings?.value) {
+      fees = [{ 
+        id: 'insurance', 
+        name: settings.value.name, 
+        price: Number(settings.value.price) 
+      }];
+    }
+  } catch (err) {
+    // Se a tabela não existir ainda, o 'fees' continua com o valor padrão de R$ 5.00
+    console.log('💡 Info: Usando taxas padrão (tabela event_settings ainda não criada)');
+  }
+
   return {
     capacity: MAX_CAPACITY,
     occupied,
     available: Math.max(0, MAX_CAPACITY - occupied),
     is_sold_out: occupied >= MAX_CAPACITY,
-    currentLot: lot
+    currentLot: lot,
+    fees
   };
 }
 

@@ -43,7 +43,12 @@ export default function Checkout() {
   const [submitError, setSubmitError] = useState('')
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
   const [timeLeft, setTimeLeft] = useState(600)
-  const [eventStatus, setEventStatus] = useState<any>({ available: 50, occupied: 0, currentLot: { name: 'PRIMEIRO', price: 110 } })
+  const [eventStatus, setEventStatus] = useState<any>({ 
+    available: 50, 
+    occupied: 0, 
+    currentLot: { name: 'PRIMEIRO', price: 110 },
+    fees: [] 
+  })
   const navigate = useNavigate() // 🚀 Para redirecionar
   const BASE_PRICE = eventStatus.currentLot?.price || 110.00
 
@@ -136,8 +141,22 @@ export default function Checkout() {
   }
 
   const calculateTotal = () => {
-    if (!appliedCoupon) return BASE_PRICE
-    return appliedCoupon.type === 'percentage' ? BASE_PRICE - (BASE_PRICE * (appliedCoupon.value / 100)) : Math.max(0, BASE_PRICE - appliedCoupon.value)
+    let total = BASE_PRICE;
+    
+    // 🎟️ Aplica desconto de cupom
+    if (appliedCoupon) {
+      total = appliedCoupon.type === 'percentage' 
+        ? BASE_PRICE - (BASE_PRICE * (appliedCoupon.value / 100)) 
+        : Math.max(0, BASE_PRICE - appliedCoupon.value);
+    }
+
+    // 🛡️ Soma as taxas obrigatórias vindas do servidor (ex: Seguro Aventura)
+    if (eventStatus.fees && Array.isArray(eventStatus.fees)) {
+      const feesTotal = eventStatus.fees.reduce((acc: number, fee: any) => acc + fee.price, 0);
+      total += feesTotal;
+    }
+
+    return total;
   }
 
   const onSubmit = async (data: ICheckoutForm) => {
@@ -342,12 +361,36 @@ export default function Checkout() {
           </div>
 
           <div className="bg-[#1A0F0A] p-10 rounded-[40px] text-white shadow-2xl space-y-6">
-            <div className="flex justify-between items-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
-              <span>Inscrição Trail Run - {eventStatus.currentLot?.name} LOTE</span>
-              <span className={appliedCoupon ? 'line-through opacity-50' : ''}>R$ {BASE_PRICE.toFixed(2)}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">
+                Inscrição Trail Run - 
+                <span className="block md:inline"> {eventStatus.currentLot?.name} Lote</span>
+              </span>
+              <span className={`text-white font-black text-sm whitespace-nowrap ${appliedCoupon ? 'line-through opacity-50' : ''}`}>
+                R$ {BASE_PRICE.toFixed(2)}
+              </span>
             </div>
-            {appliedCoupon && <div className="flex justify-between items-center text-green-400 font-bold uppercase tracking-widest text-[10px]"><span>Desconto ({appliedCoupon.code})</span><span>- R$ {(BASE_PRICE - calculateTotal()).toFixed(2)}</span></div>}
-            <div className="h-px bg-white/10" />
+
+            {appliedCoupon && (
+              <div className="flex justify-between items-center text-green-400 font-bold uppercase tracking-widest text-[10px] mb-4">
+                <span>Desconto ({appliedCoupon.code})</span>
+                <span className="whitespace-nowrap">- R$ {(BASE_PRICE - (calculateTotal() - (eventStatus.fees?.reduce((acc: number, f: any) => acc + f.price, 0) || 0))).toFixed(2)}</span>
+              </div>
+            )}
+            
+            <div className="h-px bg-white/10 my-6" />
+
+            {/* 🛡️ Exibição das Taxas (Seguro Aventura) */}
+            <div className="space-y-4">
+              {eventStatus.fees?.map((fee: any) => (
+                <div key={fee.id} className="flex justify-between items-center">
+                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{fee.name}</span>
+                  <span className="text-white font-black text-sm whitespace-nowrap">R$ {fee.price.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="h-px bg-white/10 mt-6 mb-8" />
             <div className="flex justify-between items-end">
               <div><p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Total a Pagar</p><p className="text-4xl font-black tracking-tighter">R$ {calculateTotal().toFixed(2)}</p></div>
             </div>

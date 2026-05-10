@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  flora-api:
+    build: .
+    container_name: flora-checkout-backend
+    restart: always
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10mb"
+        max-file: "3"

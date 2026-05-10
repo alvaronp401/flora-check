@@ -1,8 +1,12 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export const Terms: React.FC = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   return (
     <div className="min-h-screen bg-slate-50 py-20 px-6">
       <div className="max-w-3xl mx-auto">
@@ -11,42 +15,77 @@ export const Terms: React.FC = () => {
         </Link>
         
         <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-12 leading-none">
-          Termos de <span className="text-blue-600">Uso</span>
+          Termo de Ciência e <span className="text-blue-600">Responsabilidade</span>
         </h1>
         
         <div className="bg-white p-8 md:p-12 rounded-[40px] shadow-sm border border-slate-100 prose prose-slate max-w-none">
           <section className="mb-10">
-            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">1. Aceitação dos Termos</h2>
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">1. Orientação e Conduta</h2>
             <p className="text-slate-600 leading-relaxed">
-              Ao realizar sua inscrição no <strong>Trail & Run Club - Founder Edition Brasília</strong>, o participante declara estar ciente e concordar integralmente com as regras e condições estabelecidas neste regulamento.
+              Assumo o compromisso de seguir atentamente todas as orientações fornecidas pelo(s) condutor(es) e pela equipe de organização durante todo o período do evento.
             </p>
           </section>
 
           <section className="mb-10">
-            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">2. Responsabilidade sobre a Saúde</h2>
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">2. Livre Participação</h2>
             <p className="text-slate-600 leading-relaxed">
-              O participante declara gozar de plena saúde física e mental para a realização de atividades de trilha e corrida de aventura. É de inteira responsabilidade do atleta a realização de exames médicos prévios ao evento. A organização não se responsabiliza por incidentes decorrentes de condições pré-existentes não informadas.
+              Declaro que minha participação no evento ocorre por minha livre e espontânea vontade, na qualidade de participante, assumindo total responsabilidade por meus atos.
             </p>
           </section>
 
           <section className="mb-10">
-            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">3. Preservação Ambiental (FLONA)</h2>
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">3. Ciência de Riscos em Meio Rural</h2>
             <p className="text-slate-600 leading-relaxed">
-              O evento ocorre em uma Unidade de Conservação (Floresta Nacional de Brasília). É estritamente proibido o descarte de qualquer material (garrafas, embalagens de gel, papéis) fora das lixeiras indicadas na área de concentração. O descumprimento acarretará em desclassificação imediata e possíveis sanções dos órgãos ambientais.
+              Tenho plena ciência de que toda atividade relacionada a trilhas em meio rural pode oferecer riscos inerentes (como quedas, animais peçonhentos e variações climáticas). Reconheço que, independentemente da boa orientação e acompanhamento da organização, acidentes podem ocorrer.
             </p>
           </section>
 
           <section className="mb-10">
-            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">4. Direito de Imagem</h2>
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">4. Assunção de Responsabilidade</h2>
             <p className="text-slate-600 leading-relaxed">
-              O participante autoriza, de forma gratuita e definitiva, o uso de sua imagem e voz captadas durante o evento pela organização e seus parceiros, para fins de divulgação em redes sociais, sites e materiais publicitários.
+              Reconheço e assumo livremente todos os riscos, conhecidos ou não, e assumo total responsabilidade civil e criminal por minha participação e integridade física.
             </p>
           </section>
 
           <section className="mb-10">
-            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">5. Política de Cancelamento</h2>
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">5. Aptidão Física e Idade</h2>
             <p className="text-slate-600 leading-relaxed">
-              Conforme o Código de Defesa do Consumidor, o reembolso integral da inscrição poderá ser solicitado em até 7 (sete) dias corridos após a compra. Após esse prazo, não haverá devolução de valores em virtude dos custos de logística já empenhados (kit, seguro, reserva de espaço).
+              Atesto estar apto fisicamente para participar deste evento e que sou maior de idade. Menores de idade deverão estar obrigatoriamente acompanhados de seus responsáveis legais, que assumem todas as responsabilidades descritas neste termo.
+            </p>
+          </section>
+
+          <section className="mb-10">
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">6. Limite de Atuação da Organização</h2>
+            <p className="text-slate-600 leading-relaxed">
+              Reconheço que as atividades dos organizadores restringem-se a contribuir para que a trilha se realize com sucesso, o qual depende e é de responsabilidade exclusiva de seus participantes e de sua conduta individual.
+            </p>
+          </section>
+
+          <section className="mb-10">
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">7. Taxa de Inscrição e Seguro</h2>
+            <p className="text-slate-600 leading-relaxed">
+              Tenho ciência de que minha participação está condicionada ao pagamento da taxa de <strong>R$ 5,00</strong>, destinada ao custeio operacional e à contratação de seguro aventura individual.
+            </p>
+          </section>
+
+          <section className="mb-10">
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">8. Autorização de Uso de Imagem</h2>
+            <p className="text-slate-600 leading-relaxed">
+              AUTORIZO o uso de minha imagem (fotos e vídeos) captadas no evento para utilização no Instagram <strong>@calangosecaliandras</strong> e demais canais de comunicação do grupo. Esta autorização é concedida a título gratuito e abrangência nacional.
+            </p>
+          </section>
+
+          <section className="mb-10">
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">9. Desistência e Reembolso</h2>
+            <p className="text-slate-600 leading-relaxed">
+              Tenho ciência de que, em caso de desistência, o valor investido será devolvido ou mantido como crédito apenas se a vaga for preenchida por outro participante até 24h antes do evento.
+            </p>
+          </section>
+
+          <section className="mb-10">
+            <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">10. Declaração de Aceite</h2>
+            <p className="text-slate-600 leading-relaxed font-bold">
+              DECLARO QUE MINHA PARTICIPAÇÃO É VOLUNTÁRIA, QUE ENTENDO E ACEITO TODOS OS RISCOS E TERMOS DESCRITOS, E QUE MEU PAGAMENTO CONFIGURA A MANIFESTAÇÃO DE ACEITE INTEGRAL A ESTE TERMO.
             </p>
           </section>
         </div>

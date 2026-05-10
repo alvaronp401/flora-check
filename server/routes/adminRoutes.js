@@ -102,11 +102,30 @@ router.post('/admin/reset-event', adminAuth, async (req, res) => {
     const { error } = await supabase
       .from('registrations')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); // Truque para deletar todas as linhas
+      .neq('id', '00000000-0000-0000-0000-000000000000');
     if (error) throw error;
     res.json({ message: 'Evento resetado! Todas as inscrições foram apagadas.' });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao resetar evento.' });
+  }
+});
+
+// ⚙️ POST /admin/settings — Salva configurações globais (ex: taxa de seguro)
+router.post('/admin/settings', adminAuth, async (req, res) => {
+  try {
+    const { key, value } = req.body;
+    const { error } = await supabase
+      .from('event_settings')
+      .upsert({ 
+        key, 
+        value, 
+        updated_at: new Date().toISOString() 
+      });
+    
+    if (error) throw error;
+    res.json({ message: 'Configuração salva com sucesso!' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao salvar configuração.' });
   }
 });
 
