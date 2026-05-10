@@ -37,7 +37,11 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.use(globalLimiter); // Aplica o limite global em tudo
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://flora-check.vercel.app'],
+  origin: [
+    'http://localhost:5173', 
+    'https://flora-check.vercel.app', 
+    'https://trailrunclub.com.br'
+  ],
   methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret']
 }));
