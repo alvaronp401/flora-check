@@ -36,14 +36,25 @@ const PORT = process.env.PORT || 3001;
 // 🛡️ Middlewares Globais
 app.use(helmet());
 app.use(globalLimiter); // Aplica o limite global em tudo
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://trailrunclub.com.br',
+  'https://www.trailrunclub.com.br',
+  'https://flora-check.vercel.app'
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:5173', 
-    'https://flora-check.vercel.app', 
-    'https://trailrunclub.com.br'
-  ],
-  methods: ['GET', 'POST', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret']
+  origin: (origin, callback) => {
+    // Permite requisições sem origin (como mobile apps ou curl) ou se estiver na lista
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Domínio não permitido pelo CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-secret'],
+  credentials: true
 }));
 app.use(express.json());
 
