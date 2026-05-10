@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Lock, Construction, AlertTriangle } from 'lucide-react'
+import { Lock, Construction } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export default function AdminLogin() {
