@@ -36,6 +36,10 @@ interface Registration {
   full_name: string
   cpf: string
   email: string
+  phone: string
+  emergency_phone?: string
+  blood_type?: string
+  medication?: string
   shirt_size: string
   payment_status: string
   created_at: string
@@ -176,6 +180,49 @@ export default function Dashboard() {
     navigate('/organizacao')
   }
 
+  const handleExportCSV = () => {
+    if (registrations.length === 0) return
+
+    const headers = [
+      'Nome Completo',
+      'CPF',
+      'Email',
+      'Telefone',
+      'Emergencia',
+      'Tipo Sanguineo',
+      'Medicamento',
+      'Tamanho Camiseta',
+      'Status Pagamento',
+      'Data Inscricao'
+    ]
+
+    const csvContent = [
+      headers.join(','),
+      ...registrations.map(r => [
+        `"${r.full_name}"`,
+        `"${r.cpf}"`,
+        `"${r.email}"`,
+        `"${r.phone}"`,
+        `"${r.emergency_phone || ''}"`,
+        `"${r.blood_type || ''}"`,
+        `"${r.medication || ''}"`,
+        `"${r.shirt_size}"`,
+        `"${r.payment_status}"`,
+        `"${new Date(r.created_at).toLocaleDateString('pt-BR')}"`
+      ].join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `inscritos_flora_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   const maskData = (val: string) => {
     if (showSensitive) return val
     return val.replace(/./g, '*')
@@ -294,7 +341,11 @@ export default function Dashboard() {
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
                   <input type="text" placeholder="Buscar atleta..." className="w-full bg-gray-50 border border-gray-50 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-black transition-all text-xs font-bold" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
-                <button className="w-full md:w-auto flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all">
+                <button 
+                  onClick={handleExportCSV}
+                  disabled={registrations.length === 0}
+                  className="w-full md:w-auto flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all disabled:opacity-50"
+                >
                   <Download size={16} /> Exportar
                 </button>
               </div>

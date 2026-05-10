@@ -8,12 +8,16 @@ import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { supabase } from '../../lib/supabase'
 import { API_URL } from '../../config/api'
+import { ScheduleCard } from './ScheduleCard'
 
 interface ICheckoutForm {
   fullName: string;
   cpf: string;
   email: string;
   phone: string;
+  emergencyPhone: string;
+  bloodType: string;
+  medication: string;
   gender: string;
   shirtSize: string;
   terms: boolean;
@@ -24,6 +28,9 @@ const checkoutSchema = yup.object({
   cpf: yup.string().required('CPF é obrigatório').matches(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, 'CPF inválido (000.000.000-00)'),
   email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
   phone: yup.string().required('Telefone é obrigatório').matches(/^\(\d{2}\) \d{5}-\d{4}$/, 'Formato: (00) 00000-0000'),
+  emergencyPhone: yup.string().required('Telefone de emergência é obrigatório').matches(/^\(\d{2}\) \d{5}-\d{4}$/, 'Formato: (00) 00000-0000'),
+  bloodType: yup.string().required('Selecione seu tipo sanguíneo'),
+  medication: yup.string(),
   gender: yup.string().required('Selecione o gênero'),
   shirtSize: yup.string().required('Selecione o tamanho da camiseta'),
   terms: yup.boolean().oneOf([true], 'Você deve aceitar os termos'),
@@ -154,6 +161,9 @@ export default function Checkout() {
           cpf: data.cpf,
           email: data.email,
           phone: data.phone,
+          emergency_phone: data.emergencyPhone,
+          blood_type: data.bloodType,
+          medication: data.medication,
           gender: data.gender,
           shirt_size: data.shirtSize,
           payment_status: 'pending',
@@ -249,9 +259,9 @@ export default function Checkout() {
           <span className="text-xs font-black uppercase tracking-widest">Voltar para Home</span>
         </Link>
 
-        <div className="mb-12">
+        <div className="mb-6">
           <h1 className="text-4xl font-black text-[#1A0F0A] mb-4 tracking-tighter uppercase">Finalize sua Inscrição</h1>
-          <p className="text-gray-500 font-medium">Garanta seu kit para o maior evento da Flona 2024.</p>
+          <p className="text-gray-500 font-medium">Garanta seu kit para o maior evento da Flona 2026 e preencha o formulário abaixo para finalizar sua inscrição ( sua vaga está garantida durante 10 minutos contados ).</p>
           
           <div className="mt-8 bg-gray-50/50 border border-gray-100 p-6 rounded-3xl">
             <div className="flex flex-col gap-1">
@@ -261,17 +271,32 @@ export default function Checkout() {
               </p>
             </div>
           </div>
-
-
         </div>
+        <ScheduleCard />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm space-y-6">
             <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Dados Pessoais</h2>
             <Input label="Nome Completo" placeholder="Como no seu documento" {...register('fullName')} error={errors.fullName?.message} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="CPF" placeholder="000.000.000-00" {...register('cpf')} onChange={(e) => setValue('cpf', maskCPF(e.target.value))} error={errors.cpf?.message} />
+              <Input label="CPF PARA NOTA FISCAL" placeholder="000.000.000-00" {...register('cpf')} onChange={(e) => setValue('cpf', maskCPF(e.target.value))} error={errors.cpf?.message} />
               <Input label="Celular" placeholder="(00) 00000-0000" {...register('phone')} onChange={(e) => setValue('phone', maskPhone(e.target.value))} error={errors.phone?.message} />
+              <Input label="Número de emergência" placeholder="(00) 00000-0000" {...register('emergencyPhone')} onChange={(e) => setValue('emergencyPhone', maskPhone(e.target.value))} error={errors.emergencyPhone?.message} />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Tipo Sanguíneo</h2>
+                <div className="grid grid-cols-4 gap-2">
+                  {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => (
+                    <label key={t} className={`cursor-pointer flex items-center justify-center h-12 rounded-xl border-2 transition-all ${watch('bloodType') === t ? 'border-[#1A0F0A] bg-[#1A0F0A]/5' : 'border-gray-50 hover:border-gray-200'}`}>
+                      <input type="radio" value={t} {...register('bloodType')} className="hidden" />
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${watch('bloodType') === t ? 'text-[#1A0F0A]' : 'text-gray-400'}`}>{t}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.bloodType && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest mt-1">{errors.bloodType.message}</p>}
+              </div>
+              <Input label="Medicamento Controlado" placeholder="Se sim, qual?" {...register('medication')} error={errors.medication?.message} />
             </div>
             <Input label="E-mail" type="email" placeholder="seu@email.com" {...register('email')} error={errors.email?.message} />
           </div>

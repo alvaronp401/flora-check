@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import johnImg from '../../../assets/colaborador1.png'
 import aleImg from '../../../assets/colaborador3.png'
+import { PartnersCarousel } from './PartnersCarousel'
 
 const schedule = [
   { time: '07:00', event: 'Coffee break & Check-in' },
@@ -86,7 +87,8 @@ export const Schedule: React.FC = () => {
               </a>
             ))}
           </div>
-          <p className="mt-12 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+          <PartnersCarousel />
+          <p className="mt-6 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
             Leia os <Link to="/terms" className="text-blue-600 underline">termos de uso</Link> e <Link to="/privacy" className="text-blue-600 underline">privacidade</Link>
           </p>
         </div>
