@@ -1,10 +1,20 @@
 import React from 'react'
 import parceiro1 from '../../../assets/parceiro1.png'
 import parceiro2 from '../../../assets/parceiro2.png'
+import parceiro3 from '../../../assets/parceiro3.png'
+import parceiro4 from '../../../assets/parceiro4.png'
+import parceiro5 from '../../../assets/parceiro5.png'
+import parceiro6 from '../../../assets/parceiro6.png'
+import parceiro7 from '../../../assets/parceiro7.png'
 
 const partners = [
   { name: 'KORE', handle: '@kore.brasilia.aguasclaras', logo: parceiro1 },
   { name: 'Dr. Key', handle: '@drkeybsb', logo: parceiro2 },
+  { name: 'Clínica Txai', handle: '@clinicatxai', logo: parceiro3 },
+  { name: 'Corpo Regenerado', handle: '@corporegeneradooficial', logo: parceiro4 },
+  { name: 'Fit Café Gourmet', handle: '@fitcafegourmet', logo: parceiro5 },
+  { name: 'Ricca B. Coffee', handle: '@riccabcoffee', logo: parceiro6 },
+  { name: 'Empório Naturelo', handle: '@emporionaturelo', logo: parceiro7 },
 ]
 
 export const PartnersCarousel: React.FC = () => {
@@ -27,10 +37,10 @@ export const PartnersCarousel: React.FC = () => {
               href={`https://www.instagram.com/${partner.handle.replace('@', '')}/`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center justify-center gap-6 shrink-0 group cursor-pointer px-12 md:px-20"
+              className="flex flex-col items-center justify-center gap-6 shrink-0 group cursor-pointer px-6 md:px-10"
             >
               {/* Bounding Box: Garantimos que todas as logos ocupem o mesmo espaço de importância */}
-              <div className="h-12 md:h-16 w-32 md:w-48 flex items-center justify-center transition-all duration-700">
+              <div className="h-16 md:h-24 w-40 md:w-64 flex items-center justify-center transition-all duration-700">
                 <img 
                   src={partner.logo} 
                   alt={partner.name} 
