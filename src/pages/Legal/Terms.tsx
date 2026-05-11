@@ -78,7 +78,7 @@ export const Terms: React.FC = () => {
           <section className="mb-10">
             <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">9. Desistência e Reembolso</h2>
             <p className="text-slate-600 leading-relaxed">
-              Tenho ciência de que, em caso de desistência, o valor investido será devolvido ou mantido como crédito apenas se a vaga for preenchida por outro participante até 24h antes do evento.
+              Tenho ciência de que, em caso de <strong>desistência</strong>, o valor investido será devolvido ou mantido como crédito apenas se a vaga for preenchida por outro participante até 24h antes do evento.
             </p>
           </section>
 
