@@ -39,12 +39,13 @@ async function finalizeRegistration(registrationId, amount, paymentId = 'manual_
     }
   }
 
-  // 📧 [ESPAÇO PARA RESEND / NOTA FISCAL]
-  // Aqui você plugará o e-mail de boas-vindas e a geração de nota fiscal
-  console.log(`🚀 [SISTEMA] Disparando e-mail de boas-vindas para: ${reg.email}`);
-  console.log(`🧾 [SISTEMA] Gerando nota fiscal para: ${reg.full_name}`);
-  // Exemplo futuro: await resend.emails.send({ to: reg.email, ... })
-  // Exemplo futuro: await emitirNota(reg)
+  // 📧 [RESEND] Dispara e-mail de confirmação (Voucher)
+  try {
+    const { sendVoucherEmail } = require('./emailService');
+    await sendVoucherEmail(reg);
+  } catch (emailErr) {
+    console.error('⚠️ [AVISO] Falha ao enviar e-mail, mas inscrição foi paga:', emailErr);
+  }
 
   console.log(`✅ [SUCESSO] Inscrição #${registrationId} finalizada via: ${paymentId}`);
   return true;
