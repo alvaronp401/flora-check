@@ -72,6 +72,19 @@ router.post('/create-preference',
 
     if (updateError) throw updateError;
 
+    // 🛡️ DOUBLE-CHECK ATÔMICO (A Garantia de 100%)
+    // Contamos novamente o estoque APÓS a nossa reserva entrar.
+    const finalCheck = await getEventStatus();
+    if (finalCheck.occupied > finalCheck.capacity) {
+      // Opa! Nós fomos o "51º" a entrar. Vamos desfazer a reserva.
+      await supabase
+        .from('registrations')
+        .update({ reserved_until: null, final_price: null })
+        .eq('id', registrationId);
+        
+      return res.status(400).json({ error: 'Desculpe, as vagas acabaram de esgotar exatamente agora!' });
+    }
+
     // 🏦 Cria preferência no Mercado Pago
     const preference = new Preference(mpClient);
     
