@@ -29,12 +29,14 @@ interface Registration {
   cpf: string
   phone: string
   shirt_size: string
-  payment_status: string
+  payment_status: 'pending' | 'paid'
   created_at: string
   emergency_phone?: string
   blood_type?: string
   medication?: string
   gender?: string
+  coupon_code?: string
+  reserved_until?: string
 }
 
 interface Coupon {
