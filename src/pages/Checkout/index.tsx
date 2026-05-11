@@ -120,7 +120,15 @@ export default function Checkout() {
   }
 
   const handleEmailBlur = async (email: string) => {
-    if (!email || !email.includes('@')) return;
+    // 🛡️ Regex Sênior: Valida se o formato básico é exemplo@dominio.com
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!email) return;
+    
+    if (!emailRegex.test(email)) {
+      setEmailExternalError('Formato de e-mail inválido (ex: seu@email.com)');
+      return;
+    }
     
     setIsValidatingEmail(true);
     setEmailExternalError(null);
