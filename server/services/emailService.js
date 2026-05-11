@@ -42,9 +42,6 @@ async function sendVoucherEmail(registration) {
               <li>💊 Antialérgicos ou medicamento de uso habitual</li>
             </ul>
 
-            <div style="margin-top: 24px; padding: 16px; background-color: rgba(239, 68, 68, 0.1); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.2);">
-              <p style="font-size: 12px; color: #F87171; margin: 0;">⚠️ <strong>Atenção:</strong> Cuidado com animais peçonhentos. Alerte as pessoas próximas, não se aproxime e siga o caminho orientado.</p>
-            </div>
           </div>
 
           <p style="color: #9CA3AF; font-size: 11px; margin-top: 40px; text-align: center; line-height: 1.6;">
