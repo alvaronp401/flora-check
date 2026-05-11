@@ -11,7 +11,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, isLoading, className = '', ...props }, ref) => {
     return (
       <label className="block w-full">
-        <span className="text-xs font-black uppercase text-gray-400 tracking-widest mb-1 block flex justify-between items-center">
+        <span className="text-xs font-black uppercase text-gray-400 tracking-widest mb-1 flex justify-between items-center">
           {label}
           {isLoading && (
             <div className="flex gap-1">
@@ -35,7 +35,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           />
         </div>
         {error && (
-          <span className="text-red-500 text-[10px] font-bold uppercase mt-1 block animate-shake">
+          <span className="text-red-500 text-[10px] font-bold uppercase mt-1 animate-shake">
             {error}
           </span>
         )}
