@@ -119,9 +119,13 @@ export default function Dashboard() {
   }
 
   const handleConfirmPayment = async (id: string) => {
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`${API_URL}/admin/confirm-payment/${id}`, {
       method: 'POST',
-      headers: { 'x-admin-secret': adminSecret || '' }
+      headers: { 
+        'x-admin-secret': adminSecret || '',
+        'Authorization': session ? `Bearer ${session.access_token}` : ''
+      }
     })
     if (res.ok) fetchData()
   }
@@ -138,11 +142,13 @@ export default function Dashboard() {
       usage_limit: newCoupon.limit
     }
 
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`${API_URL}/coupon/admin/coupons`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'x-admin-secret': adminSecret || '' 
+        'x-admin-secret': adminSecret || '',
+        'Authorization': session ? `Bearer ${session.access_token}` : ''
       },
       body: JSON.stringify(couponData)
     })
@@ -158,26 +164,39 @@ export default function Dashboard() {
 
   const handleDeleteCoupon = async (id: string) => {
     if (!confirm('Excluir este cupom?')) return
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`${API_URL}/coupon/admin/coupons/${id}`, {
       method: 'DELETE',
-      headers: { 'x-admin-secret': adminSecret || '' }
+      headers: { 
+        'x-admin-secret': adminSecret || '',
+        'Authorization': session ? `Bearer ${session.access_token}` : ''
+      }
     })
     if (res.ok) fetchData()
   }
 
   const handleResetStatus = async (id: string) => {
     if (!confirm('Deseja voltar este atleta para PENDENTE?')) return
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`${API_URL}/admin/reset-status/${id}`, {
       method: 'POST',
-      headers: { 'x-admin-secret': adminSecret || '' }
+      headers: { 
+        'x-admin-secret': adminSecret || '',
+        'Authorization': session ? `Bearer ${session.access_token}` : ''
+      }
     })
     if (res.ok) fetchData()
   }
 
   const handleSimulateDemand = async (count: number) => {
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`${API_URL}/admin/simulate-demand`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-secret': adminSecret || '' },
+      headers: { 
+        'Content-Type': 'application/json', 
+        'x-admin-secret': adminSecret || '',
+        'Authorization': session ? `Bearer ${session.access_token}` : ''
+      },
       body: JSON.stringify({ count })
     })
     if (res.ok) fetchData()
@@ -185,9 +204,13 @@ export default function Dashboard() {
 
   const handleResetEvent = async () => {
     if (!confirm('ATENCAO: Isso vai apagar TODAS as inscricoes. Tem certeza?')) return
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`${API_URL}/admin/reset-event`, {
       method: 'POST',
-      headers: { 'x-admin-secret': adminSecret || '' }
+      headers: { 
+        'x-admin-secret': adminSecret || '',
+        'Authorization': session ? `Bearer ${session.access_token}` : ''
+      }
     })
     if (res.ok) fetchData()
   }
