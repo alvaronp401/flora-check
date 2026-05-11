@@ -78,7 +78,7 @@ export const FooterCTA: React.FC = () => {
       
       <div className="mt-20 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 max-w-6xl mx-auto px-6 relative z-10">
         <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest leading-loose">
-          © 2026 Trail & Run Club • Flona Experience <br className="md:hidden" /> Todos os direitos reservados
+          © 2026 Trail & Run Club • Flona Experience • CNPJ: 63.031.213/0001-09 <br className="md:hidden" /> Todos os direitos reservados
         </p>
         <div className="flex gap-8 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
           <Link to="/terms" className="hover:text-white transition-colors">Termos de Uso</Link>
