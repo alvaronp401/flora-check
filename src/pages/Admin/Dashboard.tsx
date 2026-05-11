@@ -476,9 +476,14 @@ export default function Dashboard() {
                         <tr key={r.id} className="hover:bg-gray-50/30 transition-colors group">
                           <td className="px-6 md:px-8 py-6">
                             <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
                               <span className="text-xs font-black uppercase tracking-tight">{r.full_name}</span>
-                              <span className="text-[10px] text-gray-400 font-medium">{maskData(r.email)}</span>
+                              {r.coupon_code && (
+                                <span className="bg-purple-50 text-purple-600 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-tighter">🎟️ {r.coupon_code}</span>
+                              )}
                             </div>
+                            <span className="text-[10px] text-gray-400 font-medium">{maskData(r.email)}</span>
+                          </div>
                           </td>
                           <td className="px-6 md:px-8 py-6">
                             <div className="flex flex-col gap-1">
@@ -502,7 +507,14 @@ export default function Dashboard() {
                                 <button onClick={() => handleResetStatus(r.id)} className="p-2 text-gray-300 hover:text-blue-500"><RefreshCw size={14} /></button>
                               </div>
                             ) : (
-                              <button onClick={() => handleConfirmPayment(r.id)} className="bg-orange-50 text-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">Confirmar</button>
+                              new Date(r.reserved_until) < new Date() ? (
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className="text-[9px] text-red-400 font-black uppercase tracking-widest">Expirado</span>
+                                  <button onClick={() => handleConfirmPayment(r.id)} className="text-[8px] text-gray-400 hover:text-black underline font-bold uppercase">Forçar Confirmação</button>
+                                </div>
+                              ) : (
+                                <button onClick={() => handleConfirmPayment(r.id)} className="bg-orange-50 text-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">Confirmar</button>
+                              )
                             )}
                           </td>
                         </tr>
