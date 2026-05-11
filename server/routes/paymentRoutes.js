@@ -102,9 +102,11 @@ router.post('/create-preference',
       payer: { email, name: fullName },
       external_reference: registrationId,
       payment_methods: {
-        installments: 12, // Permite parcelamento em até 12x no cartão
+        installments: 12,
         default_payment_method_id: null
       },
+      expires: true,
+      expiration_date_to: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
       back_urls: {
         success: `${frontendUrl}/success`,
         failure: `${frontendUrl}/checkout`,

@@ -13,6 +13,16 @@ async function finalizeRegistration(registrationId, amount, paymentId = 'manual_
   // Guarda de segurança: não processa duas vezes
   if (!reg || reg.payment_status === 'paid') return false;
 
+  // 🛡️ ÚLTIMA DEFESA: Verifica se o evento lotou enquanto o cara pagava
+  const { getEventStatus } = require('./eventService');
+  const status = await getEventStatus();
+  
+  // Se já tem 50 pagos, bloqueia novos
+  if (status.paid >= status.capacity) {
+    console.error(`🚨 [OVERBOOKING BOCKED] Tentativa de pagamento para evento lotado: ${registrationId}`);
+    return false;
+  }
+
   // 2. Marca como Pago e estende a reserva indefinidamente
   await supabase
     .from('registrations')
