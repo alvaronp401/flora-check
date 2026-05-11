@@ -7,7 +7,7 @@ const adminAuth = async (req, res, next) => {
 
   try {
     // 1. Verifica a Chave Secreta (Configurada no .env)
-    if (!secret || secret !== process.env.ADMIN_SECRET_KEY) {
+    if (!secret || secret !== process.env.ADMIN_SECRET) {
       return res.status(403).json({ error: 'Acesso negado! Chave mestra inválida.' });
     }
 

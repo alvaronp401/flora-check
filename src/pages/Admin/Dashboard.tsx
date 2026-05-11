@@ -94,17 +94,21 @@ export default function Dashboard() {
       const res = await fetch(`${API_URL}/admin/registrations?page=${page}&limit=10`, { headers })
       const data = await res.json()
       
-      setRegistrations(data.registrations)
-      setStats(data.stats)
-      setTotalPages(data.totalPages)
+      if (!res.ok) throw new Error(data.error || 'Erro na requisição')
+
+      setRegistrations(data.registrations || [])
+      setStats(data.stats || { total: 0, paid: 0, pending: 0, revenue: 0 })
+      setTotalPages(data.totalPages || 1)
 
       // Cupons (Rota com prefixo /coupon)
       const coupRes = await fetch(`${API_URL}/coupon/admin/coupons`, { headers })
       const coupData = await coupRes.json()
-      setCoupons(Array.isArray(coupData) ? coupData : [])
-    } catch (error) {
+      if (coupRes.ok) {
+        setCoupons(Array.isArray(coupData) ? coupData : [])
+      }
+    } catch (error: any) {
       console.error('Erro ao carregar dados:', error)
-      setErrorMsg('⚠️ Não foi possível conectar ao servidor na Hostinger. Verifique se o backend está ligado!')
+      setErrorMsg(error.message || '⚠️ Erro ao carregar dados. Verifique a conexão!')
     } finally {
       setLoading(false)
     }
