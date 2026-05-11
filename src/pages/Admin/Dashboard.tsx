@@ -509,7 +509,7 @@ export default function Dashboard() {
                                 <button onClick={() => handleResetStatus(r.id)} className="p-2 text-gray-300 hover:text-blue-500"><RefreshCw size={14} /></button>
                               </div>
                             ) : (
-                              new Date(r.reserved_until) < new Date() ? (
+                              (r.reserved_until && new Date(r.reserved_until) < new Date()) ? (
                                 <div className="flex flex-col items-center gap-1">
                                   <span className="text-[9px] text-red-400 font-black uppercase tracking-widest">Expirado</span>
                                   <button onClick={() => handleConfirmPayment(r.id)} className="text-[8px] text-gray-400 hover:text-black underline font-bold uppercase">Forçar Confirmação</button>
