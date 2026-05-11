@@ -91,6 +91,14 @@ export const Schedule: React.FC = () => {
           <p className="mt-6 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
             Leia os <Link to="/terms" className="text-blue-600 underline">termos de uso</Link> e <Link to="/privacy" className="text-blue-600 underline">privacidade</Link>
           </p>
+          <a 
+            href="https://instagram.com/eualvaronoronha" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="mt-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-300 hover:text-blue-600 transition-colors"
+          >
+            desenvolvido por: <span className="text-blue-400">@eualvaronoronha</span> - entre em contato
+          </a>
         </div>
       </div>
     </section>
