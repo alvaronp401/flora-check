@@ -47,7 +47,7 @@ export default function Success() {
 
         <div className="space-y-4">
           <a 
-            href="https://chat.whatsapp.com/seu-link-de-grupo" 
+            href="https://chat.whatsapp.com/Ja0XMR9VVo66gZSyUkWDaL" 
             target="_blank" 
             rel="noreferrer"
             className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-green-500/20 hover:scale-[1.02] transition-transform"
