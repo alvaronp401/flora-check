@@ -218,48 +218,67 @@ export default function Dashboard() {
     navigate('/organizacao')
   }
 
-  const handleExportCSV = () => {
-    if (registrations.length === 0) return
+  const handleExportCSV = async () => {
+    setLoading(true);
+    try {
+      // 🕵️‍♂️ Busca Sênior: Pega TODOS os registros pagos, ignorando a paginação do dashboard
+      const { data: allPaid, error } = await supabase
+        .from('registrations')
+        .select('*')
+        .eq('payment_status', 'paid')
+        .order('full_name', { ascending: true });
 
-    const headers = [
-      'Nome Completo',
-      'CPF',
-      'Email',
-      'Telefone',
-      'Emergencia',
-      'Tipo Sanguineo',
-      'Medicamento',
-      'Tamanho Camiseta',
-      'Status Pagamento',
-      'Data Inscricao'
-    ]
+      if (error) throw error;
+      if (!allPaid || allPaid.length === 0) {
+        alert('Nenhum registro pago encontrado para exportar.');
+        return;
+      }
 
-    const csvContent = [
-      headers.join(','),
-      ...registrations.map(r => [
-        `"${r.full_name}"`,
-        `"${r.cpf}"`,
-        `"${r.email}"`,
-        `"${r.phone}"`,
-        `"${r.emergency_phone || ''}"`,
-        `"${r.blood_type || ''}"`,
-        `"${r.medication || ''}"`,
-        `"${r.shirt_size}"`,
-        `"${r.payment_status}"`,
-        `"${new Date(r.created_at).toLocaleDateString('pt-BR')}"`
-      ].join(','))
-    ].join('\n')
+      const headers = [
+        'Nome Completo',
+        'CPF',
+        'Email',
+        'Telefone',
+        'Emergencia',
+        'Tipo Sanguineo',
+        'Medicamento',
+        'Tamanho Camiseta',
+        'Status',
+        'Data Inscricao'
+      ];
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
-    link.setAttribute('download', `inscritos_flora_${new Date().toISOString().split('T')[0]}.csv`)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+      const csvContent = [
+        headers.join(','),
+        ...allPaid.map(r => [
+          `"${r.full_name}"`,
+          `"${r.cpf}"`,
+          `"${r.email}"`,
+          `"${r.phone}"`,
+          `"${r.emergency_phone || ''}"`,
+          `"${r.blood_type || ''}"`,
+          `"${r.medication || ''}"`,
+          `"${r.shirt_size}"`,
+          `"${r.payment_status}"`,
+          `"${new Date(r.created_at).toLocaleDateString('pt-BR')}"`
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `LISTA_KITS_FLORA_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Erro ao exportar:', err);
+      alert('Erro ao gerar relatório.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const maskData = (val: string) => {
     if (showSensitive) return val
