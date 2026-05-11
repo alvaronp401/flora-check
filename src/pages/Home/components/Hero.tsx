@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Calendar, MapPin } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
-import eventArt from '../../../assets/image.png'
+import eventArt from '../../../assets/artenova.png'
 import { API_URL } from '../../../config/api'
 
 export const Hero: React.FC = () => {
