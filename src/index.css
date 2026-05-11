@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 500px;
+}
+
+.hero-section {
+  content-visibility: visible;
+}
+
 @theme {
   @keyframes shimmer {
     from { transform: translateX(-100%); }

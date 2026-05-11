@@ -46,7 +46,8 @@ export const PartnersCarousel: React.FC = () => {
                 <img 
                   src={partner.logo} 
                   alt={partner.name} 
-                  className="max-h-full max-w-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-in-out" 
+                  loading="lazy"
+                  className="max-h-full max-w-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-in-out will-change-transform" 
                 />
               </div>
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] group-hover:text-blue-600 transition-colors italic">
