@@ -266,6 +266,56 @@ export default function Dashboard() {
     }
   }
 
+  const handleExportCSV = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers: any = { 
+        'x-admin-secret': adminSecret,
+        'Authorization': session ? `Bearer ${session.access_token}` : ''
+      }
+      
+      // Busca TODOS os registros sem limite de página para o CSV
+      const res = await fetch(`${API_URL}/admin/registrations?page=1&limit=1000`, { headers })
+      const data = await res.json()
+      const allRegs: Registration[] = data.registrations || []
+
+      if (allRegs.length === 0) {
+        alert('Nenhuma inscrição para exportar.')
+        return
+      }
+
+      // 📝 Cabeçalho do CSV
+      const csvHeaders = ['Nome', 'Email', 'CPF', 'Telefone', 'Gênero', 'Camiseta', 'Tipo Sanguíneo', 'Medicamentos', 'Emergência', 'Status']
+      const csvRows = allRegs.map(r => [
+        `"${r.full_name}"`,
+        `"${r.email}"`,
+        `"${r.cpf}"`,
+        `"${r.phone}"`,
+        `"${r.gender || '-'}"`,
+        `"${r.shirt_size}"`,
+        `"${r.blood_type || '-'}"`,
+        `"${r.medication || 'Nenhum'}"`,
+        `"${r.emergency_phone || '-'}"`,
+        `"${r.payment_status.toUpperCase()}"`
+      ])
+
+      const csvContent = [csvHeaders, ...csvRows].map(e => e.join(',')).join('\n')
+      
+      // 💾 Download do Arquivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      link.setAttribute('download', `inscritos_flona_2026_${new Date().toISOString().split('T')[0]}.csv`)
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (error) {
+      alert('Erro ao exportar CSV')
+    }
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     localStorage.removeItem('admin_secret')
@@ -401,7 +451,10 @@ export default function Dashboard() {
                     className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-14 pr-6 outline-none focus:ring-2 ring-black/5 text-[10px] font-black uppercase tracking-widest"
                   />
                 </div>
-                <button className="flex items-center gap-2 px-8 py-4 bg-gray-50 hover:bg-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                <button 
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-2 px-8 py-4 bg-gray-50 hover:bg-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+                >
                   <Download size={16} /> Exportar CSV
                 </button>
               </div>
@@ -411,6 +464,7 @@ export default function Dashboard() {
                   <thead>
                     <tr className="bg-gray-50/50">
                       <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Atleta</th>
+                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Saúde / Kit</th>
                       <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Documento</th>
                       <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Contato</th>
                       <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Status</th>
@@ -423,6 +477,15 @@ export default function Dashboard() {
                           <div className="flex flex-col">
                             <span className="text-xs font-black uppercase tracking-tight">{r.full_name}</span>
                             <span className="text-[10px] text-gray-400 font-medium">{maskData(r.email)}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter">Sangue: {r.blood_type || '-'}</span>
+                              <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter">Kit: {r.shirt_size}</span>
+                            </div>
+                            <span className="text-[9px] text-gray-500 font-bold uppercase truncate max-w-[200px]">SOS: {maskData(r.emergency_phone || '-')}</span>
                           </div>
                         </td>
                         <td className="px-8 py-6">
