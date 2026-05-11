@@ -6,7 +6,7 @@ services:
     container_name: flora-checkout-backend
     restart: always
     ports:
-      - "${PORT}:${PORT}"
+      - "3002:3002"
     env_file:
       - .env
     environment:

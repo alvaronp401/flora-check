@@ -16,7 +16,7 @@ RUN npm install --production
 COPY . .
 
 # 6. Expomos a porta que o servidor usa
-EXPOSE 3001
+EXPOSE 3002
 
 # 7. Comando para iniciar
 CMD ["node", "index.js"]
