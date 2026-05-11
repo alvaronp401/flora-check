@@ -440,8 +440,8 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="relative flex-1 max-w-md">
+              <div className="p-4 md:p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
+                <div className="relative flex-1 max-w-md w-full">
                   <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
                   <input 
                     type="text" 
@@ -453,69 +453,71 @@ export default function Dashboard() {
                 </div>
                 <button 
                   onClick={handleExportCSV}
-                  className="flex items-center gap-2 px-8 py-4 bg-gray-50 hover:bg-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+                  className="flex items-center justify-center gap-2 px-6 md:px-8 py-4 bg-gray-50 hover:bg-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all w-full md:w-auto"
                 >
                   <Download size={16} /> Exportar CSV
                 </button>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50/50">
-                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Atleta</th>
-                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Saúde / Kit</th>
-                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Documento</th>
-                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Contato</th>
-                      <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {filteredRegistrations.map((r) => (
-                      <tr key={r.id} className="hover:bg-gray-50/30 transition-colors group">
-                        <td className="px-8 py-6">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-black uppercase tracking-tight">{r.full_name}</span>
-                            <span className="text-[10px] text-gray-400 font-medium">{maskData(r.email)}</span>
-                          </div>
-                        </td>
-                        <td className="px-8 py-6">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
-                              <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter">Sangue: {r.blood_type || '-'}</span>
-                              <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter">Kit: {r.shirt_size}</span>
-                            </div>
-                            <span className="text-[9px] text-gray-500 font-bold uppercase truncate max-w-[200px]">SOS: {maskData(r.emergency_phone || '-')}</span>
-                          </div>
-                        </td>
-                        <td className="px-8 py-6">
-                          <span className="text-[10px] font-black tracking-widest text-gray-500">{maskData(r.cpf)}</span>
-                        </td>
-                        <td className="px-8 py-6">
-                          <span className="text-[10px] font-bold text-gray-500">{maskData(r.phone)}</span>
-                        </td>
-                        <td className="px-8 py-6 text-center">
-                          {r.payment_status === 'paid' ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <span className="bg-green-50 text-green-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">Pago</span>
-                              <button onClick={() => handleResetStatus(r.id)} className="p-2 text-gray-300 hover:text-blue-500"><RefreshCw size={14} /></button>
-                            </div>
-                          ) : (
-                            <button onClick={() => handleConfirmPayment(r.id)} className="bg-orange-50 text-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">Confirmar</button>
-                          )}
-                        </td>
+              <div className="overflow-x-auto w-full">
+                <div className="min-w-[800px]">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50/50">
+                        <th className="px-6 md:px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Atleta</th>
+                        <th className="px-6 md:px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Saúde / Kit</th>
+                        <th className="px-6 md:px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Documento</th>
+                        <th className="px-6 md:px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Contato</th>
+                        <th className="px-6 md:px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {filteredRegistrations.map((r) => (
+                        <tr key={r.id} className="hover:bg-gray-50/30 transition-colors group">
+                          <td className="px-6 md:px-8 py-6">
+                            <div className="flex flex-col">
+                              <span className="text-xs font-black uppercase tracking-tight">{r.full_name}</span>
+                              <span className="text-[10px] text-gray-400 font-medium">{maskData(r.email)}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 md:px-8 py-6">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter">Sangue: {r.blood_type || '-'}</span>
+                                <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter">Kit: {r.shirt_size}</span>
+                              </div>
+                              <span className="text-[9px] text-gray-500 font-bold uppercase truncate max-w-[150px] md:max-w-[200px]">SOS: {maskData(r.emergency_phone || '-')}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 md:px-8 py-6">
+                            <span className="text-[10px] font-black tracking-widest text-gray-500">{maskData(r.cpf)}</span>
+                          </td>
+                          <td className="px-6 md:px-8 py-6">
+                            <span className="text-[10px] font-bold text-gray-500">{maskData(r.phone)}</span>
+                          </td>
+                          <td className="px-6 md:px-8 py-6 text-center">
+                            {r.payment_status === 'paid' ? (
+                              <div className="flex items-center justify-center gap-2">
+                                <span className="bg-green-50 text-green-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">Pago</span>
+                                <button onClick={() => handleResetStatus(r.id)} className="p-2 text-gray-300 hover:text-blue-500"><RefreshCw size={14} /></button>
+                              </div>
+                            ) : (
+                              <button onClick={() => handleConfirmPayment(r.id)} className="bg-orange-50 text-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">Confirmar</button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* PAGINAÇÃO */}
-              <div className="p-8 bg-gray-50/50 flex items-center justify-between">
+              <div className="p-6 md:p-8 bg-gray-50/50 flex flex-col md:flex-row items-center justify-between gap-4">
                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Página {page} de {totalPages}</span>
-                <div className="flex gap-2">
-                  <Button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} variant="secondary">Anterior</Button>
-                  <Button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Próximo</Button>
+                <div className="flex gap-2 w-full md:w-auto">
+                  <Button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} variant="secondary" className="flex-1 md:flex-none">Anterior</Button>
+                  <Button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="flex-1 md:flex-none">Próximo</Button>
                 </div>
               </div>
             </div>
