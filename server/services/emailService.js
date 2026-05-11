@@ -45,8 +45,7 @@ async function sendVoucherEmail(registration) {
           </div>
 
           <p style="color: #9CA3AF; font-size: 11px; margin-top: 40px; text-align: center; line-height: 1.6;">
-            © 2026 Trail & Run Club • Flona Experience <br>
-            Sua nota fiscal de serviço será emitida e enviada para este e-mail em até 7 dias úteis.
+            © 2026 Trail & Run Club • Flona Experience
           </p>
         </div>
       `,
