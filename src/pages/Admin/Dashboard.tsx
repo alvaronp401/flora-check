@@ -9,7 +9,6 @@ import {
   Trash2, 
   CheckCircle2, 
   Clock, 
-  AlertCircle,
   RefreshCw,
   LogOut,
   CircleDollarSign,
@@ -18,7 +17,8 @@ import {
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useNavigate } from 'react-router-dom'
-import Button from '../../components/Button'
+import Button from '../../components/ui/Button'
+import Input from '../../components/ui/Input'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -121,10 +121,6 @@ export default function Dashboard() {
       if (coupRes.ok) {
         setCoupons(Array.isArray(coupData) ? coupData : [])
       }
-
-      // Busca Configurações (Lotes e Taxas)
-      const setRes = await fetch(`${API_URL}/admin/registrations`, { headers }) // Reutiliza o endpoint de stats para simplificar
-      // Em uma implementação real, poderíamos ter um GET /admin/settings
     } catch (error: any) {
       console.error('Erro ao carregar dados:', error)
       setErrorMsg(error.message || '⚠️ Erro ao carregar dados. Verifique a conexão!')
@@ -284,6 +280,12 @@ export default function Dashboard() {
     r.cpf.includes(searchTerm)
   )
 
+  const handleUpdateFee = async () => {
+    setIsUpdatingFee(true)
+    await handleSaveSettings('fees', [{id: 'insurance', ...feeSettings}])
+    setIsUpdatingFee(false)
+  }
+
   return (
     <div className="min-h-screen bg-[#FDFCFB] text-[#1A0F0A] font-sans selection:bg-black selection:text-white">
       {/* HEADER PREMIUM */}
@@ -336,6 +338,12 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-[1400px] mx-auto px-6 py-12">
+        {errorMsg && (
+          <div className="mb-8 bg-red-50 text-red-500 p-6 rounded-[32px] border border-red-100 flex items-center gap-4 text-xs font-black uppercase tracking-widest">
+            <Clock size={20} /> {errorMsg}
+          </div>
+        )}
+
         {activeTab === 'registrations' ? (
           <>
             {/* STATS CARDS */}
@@ -375,7 +383,13 @@ export default function Dashboard() {
             </div>
 
             {/* TABLE SECTION */}
-            <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden relative">
+              {loading && (
+                <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                  <RefreshCw className="animate-spin text-black" size={32} />
+                </div>
+              )}
+
               <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="relative flex-1 max-w-md">
                   <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
@@ -432,6 +446,15 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               </div>
+
+              {/* PAGINAÇÃO */}
+              <div className="p-8 bg-gray-50/50 flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Página {page} de {totalPages}</span>
+                <div className="flex gap-2">
+                  <Button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} variant="secondary">Anterior</Button>
+                  <Button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Próximo</Button>
+                </div>
+              </div>
             </div>
           </>
         ) : activeTab === 'coupons' ? (
@@ -442,22 +465,18 @@ export default function Dashboard() {
                 <Plus size={20} /> Novo Cupom
               </h2>
               <form onSubmit={handleCreateCoupon} className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Codigo</label>
-                  <input 
-                    type="text" 
-                    value={newCoupon.code}
-                    onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})}
-                    className="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-black uppercase tracking-widest"
-                    placeholder="EX: FLONA20"
-                    required
-                  />
-                </div>
+                <Input 
+                  label="Código" 
+                  value={newCoupon.code}
+                  onChange={(e) => setNewCoupon({...newCoupon, code: e.target.value.toUpperCase()})}
+                  placeholder="EX: FLONA20"
+                  required
+                />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Tipo</label>
                     <select 
-                      className="w-full bg-gray-50 border-none rounded-2xl p-4 text-[10px] font-black uppercase"
+                      className="w-full bg-gray-50 border-none rounded-2xl p-4 text-[10px] font-black uppercase outline-none focus:ring-2 ring-black/5"
                       value={newCoupon.type}
                       onChange={(e) => setNewCoupon({...newCoupon, type: e.target.value})}
                     >
@@ -465,28 +484,22 @@ export default function Dashboard() {
                       <option value="fixed">R$ Fixo</option>
                     </select>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Valor</label>
-                    <input 
-                      type="number"
-                      value={newCoupon.value}
-                      onChange={(e) => setNewCoupon({...newCoupon, value: Number(e.target.value)})}
-                      className="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-black"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Limite</label>
-                  <input 
+                  <Input 
+                    label="Valor" 
                     type="number"
-                    value={newCoupon.limit}
-                    onChange={(e) => setNewCoupon({...newCoupon, limit: Number(e.target.value)})}
-                    className="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-black"
+                    value={newCoupon.value}
+                    onChange={(e) => setNewCoupon({...newCoupon, value: Number(e.target.value)})}
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full py-6 bg-black text-white">Gerar Cupom</Button>
+                <Input 
+                  label="Limite de Uso" 
+                  type="number"
+                  value={newCoupon.limit}
+                  onChange={(e) => setNewCoupon({...newCoupon, limit: Number(e.target.value)})}
+                  required
+                />
+                <Button type="submit" className="w-full py-6">Gerar Cupom</Button>
               </form>
             </div>
 
@@ -522,16 +535,21 @@ export default function Dashboard() {
                 <h2 className="text-xl font-black uppercase tracking-tighter">Taxas Obrigatórias</h2>
               </div>
               <div className="grid grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Nome</label>
-                  <input type="text" value={feeSettings.name} onChange={(e) => setFeeSettings({...feeSettings, name: e.target.value})} className="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-black" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Valor</label>
-                  <input type="number" value={feeSettings.price} onChange={(e) => setFeeSettings({...feeSettings, price: Number(e.target.value)})} className="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-black" />
-                </div>
+                <Input 
+                  label="Nome da Taxa" 
+                  value={feeSettings.name} 
+                  onChange={(e) => setFeeSettings({...feeSettings, name: e.target.value})} 
+                />
+                <Input 
+                  label="Valor Unitário (R$)" 
+                  type="number" 
+                  value={feeSettings.price} 
+                  onChange={(e) => setFeeSettings({...feeSettings, price: Number(e.target.value)})} 
+                />
               </div>
-              <Button onClick={() => handleSaveSettings('fees', [{id: 'insurance', ...feeSettings}])} className="w-full bg-black text-white py-6">Salvar Taxas</Button>
+              <Button onClick={handleUpdateFee} disabled={isUpdatingFee} className="w-full py-6">
+                {isUpdatingFee ? 'Salvando...' : 'Salvar Taxas'}
+              </Button>
             </div>
 
             <div className="bg-white p-12 rounded-[40px] border border-gray-100 shadow-sm space-y-10">
@@ -547,16 +565,15 @@ export default function Dashboard() {
                 ].map((l) => (
                   <div key={l.id} className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">{l.label}</label>
-                    <input 
+                    <Input 
                       type="number" 
                       value={l.price} 
                       onChange={(e) => setLotPrices({...lotPrices, [l.id]: Number(e.target.value)})}
-                      className="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-black" 
                     />
                   </div>
                 ))}
               </div>
-              <Button onClick={() => handleSaveSettings('lot_prices', lotPrices)} className="w-full bg-black text-white py-6">Salvar Preços</Button>
+              <Button onClick={() => handleSaveSettings('lot_prices', lotPrices)} className="w-full py-6">Salvar Preços</Button>
             </div>
           </div>
         )}
