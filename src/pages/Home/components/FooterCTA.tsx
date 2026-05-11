@@ -76,14 +76,17 @@ export const FooterCTA: React.FC = () => {
 
       </div>
       
-      <div className="mt-20 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 max-w-6xl mx-auto px-6 relative z-10">
-        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest leading-loose">
-          © 2026 Trail & Run Club • Flona Experience • CNPJ: 63.031.213/0001-09 <br className="md:hidden" /> Todos os direitos reservados
+      <div className="mt-20 pt-10 border-t border-white/10 flex flex-col items-center gap-8 max-w-6xl mx-auto px-6 relative z-10">
+        <p className="text-gray-500 text-[9px] md:text-[10px] font-bold uppercase tracking-widest leading-loose text-center">
+          © 2026 Trail & Run Club • Flona Experience • CNPJ: 63.031.213/0001-09 <br /> Todos os direitos reservados
         </p>
-        <div className="flex gap-8 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
-          <Link to="/terms" className="hover:text-white transition-colors">Termos de Uso</Link>
-          <Link to="/privacy" className="hover:text-white transition-colors">Privacidade</Link>
-          <a href="https://instagram.com/eualvaronoronha" target="_blank" rel="noopener noreferrer" className="hover:text-[#D4B996] transition-colors border-l border-white/10 pl-8">
+        
+        <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+          <div className="flex gap-8">
+            <Link to="/terms" className="hover:text-white transition-colors">Termos de Uso</Link>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacidade</Link>
+          </div>
+          <a href="https://instagram.com/eualvaronoronha" target="_blank" rel="noopener noreferrer" className="hover:text-[#D4B996] transition-colors border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-12 text-center md:text-left">
             Desenvolvido por: <span className="font-black text-[#D4B996]">@eualvaronoronha</span>
           </a>
         </div>
