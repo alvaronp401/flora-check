@@ -17,8 +17,8 @@ import {
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useNavigate } from 'react-router-dom'
-import Button from '../../components/ui/Button'
-import Input from '../../components/ui/Input'
+import { Button } from '../../components/ui/Button'
+import { Input } from '../../components/ui/Input'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -564,8 +564,8 @@ export default function Dashboard() {
                   { id: 'lot3', label: '3º Lote', price: lotPrices.lot3 },
                 ].map((l) => (
                   <div key={l.id} className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">{l.label}</label>
                     <Input 
+                      label={l.label}
                       type="number" 
                       value={l.price} 
                       onChange={(e) => setLotPrices({...lotPrices, [l.id]: Number(e.target.value)})}
