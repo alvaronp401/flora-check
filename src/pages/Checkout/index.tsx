@@ -467,8 +467,12 @@ export default function Checkout() {
                   <p className="text-[10px] font-black uppercase tracking-widest">{submitError}</p>
                 </div>
               )}
-              <Button type="submit" disabled={isSubmitting} className="w-full h-16 text-lg bg-[#D4B996] text-[#1A0F0A] hover:bg-[#E5CBA7] shadow-xl">
-                {isSubmitting ? 'Processando...' : 'Ir para o Pagamento'}
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || eventStatus.is_sold_out} 
+                className={`w-full h-16 text-lg shadow-xl ${eventStatus.is_sold_out ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#D4B996] text-[#1A0F0A] hover:bg-[#E5CBA7]'}`}
+              >
+                {isSubmitting ? 'Processando...' : eventStatus.is_sold_out ? 'Vagas Esgotadas' : 'Ir para o Pagamento'}
               </Button>
             </div>
           </div>
