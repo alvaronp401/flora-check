@@ -49,6 +49,7 @@ export const PartnersCarousel: React.FC = () => {
                   src={partner.logo} 
                   alt={partner.name} 
                   loading="lazy"
+                  decoding="async"
                   className="max-h-full max-w-full object-contain opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-in-out will-change-transform" 
                 />
               </div>

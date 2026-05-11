@@ -2,11 +2,13 @@
 
 section {
   content-visibility: auto;
-  contain-intrinsic-size: 1px 500px;
+  contain-intrinsic-size: 1px 1000px; /* Aumentado para evitar saltos no scroll mobile */
 }
 
 .hero-section {
   content-visibility: visible;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 1000px;
 }
 
 @theme {
