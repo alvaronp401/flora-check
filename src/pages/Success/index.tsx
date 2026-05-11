@@ -24,7 +24,7 @@ export default function Success() {
             <Calendar className="text-gray-400" size={20} />
             <div className="text-left">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Data do Evento</p>
-              <p className="font-bold text-sm">26 de Junho, 2024</p>
+              <p className="font-bold text-sm">06 de Junho, 2026</p>
             </div>
           </div>
 
@@ -40,7 +40,7 @@ export default function Success() {
             <Trophy className="text-gray-400" size={20} />
             <div className="text-left">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Sua Categoria</p>
-              <p className="font-bold text-sm">Trail Run Club - 12km</p>
+              <p className="font-bold text-sm">Trail Run Club - 06km</p>
             </div>
           </div>
         </div>
