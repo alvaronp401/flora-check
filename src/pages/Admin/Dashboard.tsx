@@ -88,7 +88,11 @@ export default function Dashboard() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const headers = { 'x-admin-secret': adminSecret || '' }
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers: any = { 
+        'x-admin-secret': adminSecret || '',
+        'Authorization': session ? `Bearer ${session.access_token}` : ''
+      }
       
       // Busca unificada de inscritos e stats
       const res = await fetch(`${API_URL}/admin/registrations?page=${page}&limit=10`, { headers })
