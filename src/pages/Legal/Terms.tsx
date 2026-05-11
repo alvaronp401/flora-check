@@ -71,7 +71,7 @@ export const Terms: React.FC = () => {
           <section className="mb-10">
             <h2 className="text-xl font-black uppercase tracking-wider text-slate-800 mb-4">8. Autorização de Uso de Imagem</h2>
             <p className="text-slate-600 leading-relaxed">
-              AUTORIZO o uso de minha imagem (fotos e vídeos) captadas no evento para utilização no Instagram <strong>@calangosecaliandras</strong> e demais canais de comunicação do grupo. Esta autorização é concedida a título gratuito e abrangência nacional.
+              AUTORIZO o uso de minha imagem (fotos e vídeos) captadas no evento para utilização no Instagram <strong>@thetrailrunclub</strong> e demais canais de comunicação do grupo. Esta autorização é concedida a título gratuito e abrangência nacional.
             </p>
           </section>
 
