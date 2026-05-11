@@ -104,6 +104,7 @@ export default function Dashboard() {
       setCoupons(Array.isArray(coupData) ? coupData : [])
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
+      setErrorMsg('⚠️ Não foi possível conectar ao servidor na Hostinger. Verifique se o backend está ligado!')
     } finally {
       setLoading(false)
     }
@@ -332,6 +333,13 @@ export default function Dashboard() {
             <Settings size={16} /> Configuracoes
           </button>
         </div>
+
+        {errorMsg && (
+          <div className="bg-red-50 text-red-500 p-6 rounded-3xl border border-red-100 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+            <AlertCircle className="shrink-0" size={24} />
+            <p className="text-xs font-black uppercase tracking-widest">{errorMsg}</p>
+          </div>
+        )}
 
         {activeTab === 'registrations' ? (
           <>
