@@ -6,6 +6,7 @@ import parceiro4 from '../../../assets/parceiro4.png'
 import parceiro5 from '../../../assets/parceiro5.png'
 import parceiro6 from '../../../assets/parceiro6.png'
 import parceiro7 from '../../../assets/parceiro7.png'
+import parceiro8 from '../../../assets/parceiro8.png'
 
 const partners = [
   { name: 'KORE', handle: '@kore.brasilia.aguasclaras', logo: parceiro1 },
@@ -15,6 +16,7 @@ const partners = [
   { name: 'Fit Café Gourmet', handle: '@fitcafegourmet', logo: parceiro5 },
   { name: 'Ricca B. Coffee', handle: '@riccabcoffee', logo: parceiro6 },
   { name: 'Empório Naturelo', handle: '@emporionaturelo', logo: parceiro7 },
+  { name: 'Felipe Alexandre', handle: '@lipeoalexandre.nutri', logo: parceiro8 },
 ]
 
 export const PartnersCarousel: React.FC = () => {
