@@ -1,8 +1,8 @@
 const { Resend } = require('resend');
 require('dotenv').config();
 
-// 🔑 API KEY do Álvaro configurada!
-const resend = new Resend('re_LPywdtpF_P6Jd6Lv8mXqVhHrt3fW8A74Q');
+// 🔑 API KEY via Variável de Ambiente (.env)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * 📧 Envia o Voucher de Confirmação e o Guia do Atleta
