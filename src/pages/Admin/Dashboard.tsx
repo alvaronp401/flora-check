@@ -36,6 +36,7 @@ interface Registration {
   emergency_phone?: string
   blood_type?: string
   medication?: string
+  gender?: string
 }
 
 interface Coupon {
@@ -243,6 +244,7 @@ export default function Dashboard() {
         'Tipo Sanguineo',
         'Medicamento',
         'Tamanho Camiseta',
+        'Genero',
         'Status',
         'Data Inscricao'
       ];
@@ -258,6 +260,7 @@ export default function Dashboard() {
           `"${r.blood_type || ''}"`,
           `"${r.medication || ''}"`,
           `"${r.shirt_size}"`,
+          `"${r.gender || ''}"`,
           `"${r.payment_status}"`,
           `"${new Date(r.created_at).toLocaleDateString('pt-BR')}"`
         ].join(','))
@@ -412,6 +415,7 @@ export default function Dashboard() {
                       <th className="px-8 py-6">Atleta</th>
                       <th className="px-8 py-6">Documentos</th>
                       <th className="px-8 py-6 text-center">Camiseta</th>
+                      <th className="px-8 py-6 text-center">Genero</th>
                       <th className="px-8 py-6 text-center">Status</th>
                     </tr>
                   </thead>
@@ -427,6 +431,9 @@ export default function Dashboard() {
                         </td>
                         <td className="px-8 py-6 text-center">
                           <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-[10px] font-black">{r.shirt_size}</span>
+                        </td>
+                        <td className="px-8 py-6 text-center">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase">{r.gender || '-'}</span>
                         </td>
                         <td className="px-8 py-6 text-center">
                           {r.payment_status === 'paid' ? (

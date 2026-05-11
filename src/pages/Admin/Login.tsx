@@ -27,7 +27,14 @@ export default function AdminLogin() {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       if (data.user) {
-        navigate('/portal-flona')
+        // 🔐 Solicita a Chave Mestra para comunicação com o Backend
+        const secret = prompt('Digite a Chave Mestra (ADMIN_SECRET) para liberar o Dashboard:');
+        if (secret) {
+          localStorage.setItem('admin_secret', secret);
+          navigate('/portal-flona');
+        } else {
+          alert('Chave Mestra é obrigatória para acessar o Dashboard.');
+        }
       }
     } catch (error: any) {
       // Erro genérico para não dar pistas
