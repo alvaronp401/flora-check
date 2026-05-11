@@ -106,7 +106,7 @@ router.post('/create-preference',
         default_payment_method_id: null
       },
       expires: true,
-      expiration_date_to: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+      date_of_expiration: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
       back_urls: {
         success: `${frontendUrl}/success`,
         failure: `${frontendUrl}/checkout`,
