@@ -15,7 +15,7 @@ const partners = [
   { name: 'Corpo Regenerado', handle: '@corporegeneradooficial', logo: parceiro4 },
   { name: 'Fit Café Gourmet', handle: '@fitcafegourmet', logo: parceiro5 },
   { name: 'Ricca B. Coffee', handle: '@riccabcoffee', logo: parceiro6 },
-  { name: 'Empório Naturelo', handle: '@emporionaturelo', logo: parceiro7 },
+  { name: 'Natuelo', handle: '@natuelo_', logo: parceiro7 },
   { name: 'Felipe Alexandre', handle: '@lipeoalexandre.nutri', logo: parceiro8 },
 ]
 
