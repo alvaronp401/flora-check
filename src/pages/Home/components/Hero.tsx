@@ -78,7 +78,7 @@ export const Hero: React.FC = () => {
 
             {eventStatus.available > 0 ? (
               <Link to="/checkout" className="w-full md:w-auto">
-                <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group shadow-2xl">
+                <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group">
                   GARANTIR MINHA VAGA
                 </Button>
               </Link>
@@ -105,7 +105,7 @@ export const Hero: React.FC = () => {
         {/* Imagem Principal (Visual do Evento) */}
         <div className="relative group -mt-16 md:mt-0">
           <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full scale-75 animate-pulse" />
-          <div className="relative rounded-[40px] overflow-hidden border-4 border-white/10 shadow-2xl transform hover:scale-[1.02] transition-transform duration-500">
+          <div className="relative rounded-[40px] overflow-hidden border-4 border-white/10 transform hover:scale-[1.02] transition-transform duration-500">
             <img 
               src={eventArt} 
               alt="Trail & Run Evento" 

@@ -36,7 +36,7 @@ export const Schedule: React.FC = () => {
         
         <div className="space-y-4 mb-24">
           {schedule.map((item, i) => (
-            <div key={i} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+            <div key={i} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8 bg-white p-6 rounded-3xl border border-slate-100 hover:border-slate-200 transition-all">
               <span className="text-xl font-black text-blue-600 min-w-[80px]">
                 {item.time}
               </span>
