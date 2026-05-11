@@ -42,6 +42,8 @@ export default function Checkout() {
   const [couponError, setCouponError] = useState('')
   const [submitError, setSubmitError] = useState('')
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
+  const [isValidatingEmail, setIsValidatingEmail] = useState(false)
+  const [emailExternalError, setEmailExternalError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState(600)
   const [eventStatus, setEventStatus] = useState<any>({ 
     available: 50, 
@@ -116,6 +118,35 @@ export default function Checkout() {
   const maskPhone = (value: string) => {
     return value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').replace(/(-\d{4})\d+?$/, '$1')
   }
+
+  const handleEmailBlur = async (email: string) => {
+    if (!email || !email.includes('@')) return;
+    
+    setIsValidatingEmail(true);
+    setEmailExternalError(null);
+    
+    try {
+      const response = await fetch(`${API_URL}/validate-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      
+      const data = await response.json();
+      
+      if (!data.isValid) {
+        setEmailExternalError(data.suggestion 
+          ? `E-mail inválido. Você quis dizer ${data.suggestion}?` 
+          : 'Este e-mail parece ser inválido ou não existe.');
+      } else if (data.isDisposable) {
+        setEmailExternalError('E-mails temporários não são permitidos.');
+      }
+    } catch (err) {
+      console.error('Erro ao validar e-mail:', err);
+    } finally {
+      setIsValidatingEmail(false);
+    }
+  };
 
   const handleApplyCoupon = async () => {
     if (!couponInput) return
@@ -326,7 +357,18 @@ export default function Checkout() {
               </div>
               <Input label="Medicamento Controlado" placeholder="Se sim, qual?" {...register('medication')} error={errors.medication?.message} />
             </div>
-            <Input label="E-mail" type="email" placeholder="seu@email.com" {...register('email')} error={errors.email?.message} />
+            <Input 
+              label="E-mail" 
+              type="email" 
+              placeholder="seu@email.com" 
+              {...register('email')} 
+              onBlur={(e) => {
+                register('email').onBlur(e);
+                handleEmailBlur(e.target.value);
+              }}
+              isLoading={isValidatingEmail}
+              error={errors.email?.message || emailExternalError || undefined} 
+            />
           </div>
 
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm space-y-8">

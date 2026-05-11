@@ -11,6 +11,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
+const { validateEmail } = require('./services/emailValidationService');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -43,7 +44,16 @@ app.use(express.json());
 app.use(eventRoutes);
 
 // 💰 Rotas de Pagamento (Limiter aplicado apenas nas rotas sensíveis, sem mudar o path)
-app.use(paymentRoutes); 
+// 📧 Rota de Validação de E-mail (Abstract API)
+app.post('/validate-email', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'E-mail é obrigatório' });
+  
+  const result = await validateEmail(email);
+  res.json(result);
+});
+
+app.use('/', paymentRoutes); 
 
 // 🎟️ Rotas de Cupom (Limiter aplicado globalmente no grupo de cupons)
 app.use('/coupon', sensitiveLimiter, couponRoutes); 
