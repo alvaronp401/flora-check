@@ -58,6 +58,7 @@ interface Stats {
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'registrations' | 'coupons' | 'settings'>('registrations')
   const [stats, setStats] = useState<Stats | null>(null)
+  const [lotPrices, setLotPrices] = useState({ lot1: 110, lot2: 130, lot3: 150 })
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [loading, setLoading] = useState(true)
@@ -118,6 +119,26 @@ export default function Dashboard() {
     }
   }
 
+  const handleSaveSettings = async (key: string, value: any) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(`${API_URL}/admin/settings`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-secret': adminSecret || '',
+          'Authorization': session ? `Bearer ${session.access_token}` : ''
+        },
+        body: JSON.stringify({ key, value })
+      })
+      if (!res.ok) throw new Error('Erro ao salvar')
+      alert('Configuração salva com sucesso!')
+      fetchData()
+    } catch (error) {
+      alert('Falha ao salvar configuração')
+    }
+  }
+
   const handleConfirmPayment = async (id: string) => {
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`${API_URL}/admin/confirm-payment/${id}`, {
@@ -126,7 +147,6 @@ export default function Dashboard() {
         'x-admin-secret': adminSecret || '',
         'Authorization': session ? `Bearer ${session.access_token}` : ''
       }
-    })
     if (res.ok) fetchData()
   }
 
@@ -219,30 +239,8 @@ export default function Dashboard() {
     e.preventDefault()
     setIsUpdatingFee(true)
     setErrorMsg('')
-    try {
-      const res = await fetch(`${API_URL}/admin/settings`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-admin-secret': adminSecret || '' 
-        },
-        body: JSON.stringify({
-          key: 'insurance_fee',
-          value: feeSettings
-        })
-      })
-
-      if (res.ok) {
-        alert('Configurações salvas com sucesso!')
-        fetchData()
-      } else {
-        throw new Error('Falha ao salvar')
-      }
-    } catch (error: any) {
-      setErrorMsg('Erro ao salvar configuração.')
-    } finally {
-      setIsUpdatingFee(false)
-    }
+    await handleSaveSettings('fees', [{ id: 'insurance', ...feeSettings }])
+    setIsUpdatingFee(false)
   }
 
   const handleLogout = async () => {
@@ -656,14 +654,45 @@ export default function Dashboard() {
                   </p>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  disabled={isUpdatingFee}
-                  className="w-full h-16 bg-[#1A0F0A] text-white hover:bg-gray-800 shadow-xl"
-                >
-                  {isUpdatingFee ? 'Salvando...' : 'Salvar Alteracoes'}
                 </Button>
               </form>
+            </div>
+
+            <div className="bg-white p-8 md:p-12 rounded-[40px] border border-gray-100 shadow-sm space-y-10 mt-8">
+              <div className="flex items-center gap-4 text-[#1A0F0A]">
+                <div className="bg-orange-50 p-3 rounded-2xl">
+                  <Ticket className="text-orange-500" size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black uppercase tracking-tighter">Preços dos Lotes</h2>
+                  <p className="text-xs text-gray-400 font-medium">Defina o valor base para cada lote do evento</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  { id: 'lot1', label: '1º Lote', price: lotPrices.lot1 },
+                  { id: 'lot2', label: '2º Lote', price: lotPrices.lot2 },
+                  { id: 'lot3', label: '3º Lote', price: lotPrices.lot3 }
+                ].map((lot) => (
+                  <div key={lot.id} className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">{lot.label}</label>
+                    <input 
+                      type="number" 
+                      value={lot.price}
+                      onChange={(e) => setLotPrices({...lotPrices, [lot.id]: Number(e.target.value)})}
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-5 outline-none focus:border-black transition-all text-xs font-black"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <Button 
+                onClick={() => handleSaveSettings('lot_prices', lotPrices)}
+                className="w-full h-16 bg-black text-white hover:bg-gray-800 shadow-xl"
+              >
+                Salvar Preços dos Lotes
+              </Button>
             </div>
           </div>
         )}
