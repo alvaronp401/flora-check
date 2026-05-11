@@ -10,7 +10,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 async function sendVoucherEmail(registration) {
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Trail Run Club <onboarding@resend.dev>',
+      from: 'Trail Run Club <atendimento@trailrunclub.com.br>',
       to: [registration.email],
       subject: `🔥 Inscrição Confirmada: ${registration.full_name}`,
       html: `
