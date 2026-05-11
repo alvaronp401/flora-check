@@ -478,6 +478,17 @@ export default function Checkout() {
           </div>
 
         </form>
+        
+        <div className="text-center pt-12 pb-8">
+          <a 
+            href="https://instagram.com/eualvaronoronha" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-300 hover:text-black transition-colors"
+          >
+            Desenvolvido por: <span className="text-black">@eualvaronoronha</span> • Entre em contato
+          </a>
+        </div>
       </div>
     </div>
   )

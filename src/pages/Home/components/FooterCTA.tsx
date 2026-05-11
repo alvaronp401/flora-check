@@ -83,6 +83,9 @@ export const FooterCTA: React.FC = () => {
         <div className="flex gap-8 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
           <Link to="/terms" className="hover:text-white transition-colors">Termos de Uso</Link>
           <Link to="/privacy" className="hover:text-white transition-colors">Privacidade</Link>
+          <a href="https://instagram.com/eualvaronoronha" target="_blank" rel="noopener noreferrer" className="hover:text-[#D4B996] transition-colors border-l border-white/10 pl-8">
+            Desenvolvido por: <span className="font-black text-[#D4B996]">@eualvaronoronha</span>
+          </a>
         </div>
       </div>
     </footer>
