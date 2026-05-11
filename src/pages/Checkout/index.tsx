@@ -161,7 +161,7 @@ export default function Checkout() {
     setIsValidatingCoupon(true)
     setCouponError('')
     try {
-      const response = await fetch(`${API_URL}/validate-coupon`, {
+      const response = await fetch(`${API_URL}/coupon/validate-coupon`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponInput })
