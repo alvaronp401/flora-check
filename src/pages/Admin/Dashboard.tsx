@@ -69,6 +69,7 @@ export default function Dashboard() {
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'pending'>('all')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [showSensitive, setShowSensitive] = useState(false)
@@ -291,9 +292,31 @@ export default function Dashboard() {
         return
       }
 
-      // 📝 Cabeçalho do CSV
+      // 🛡️ Lógica de Deduplicação para o CSV: Uma linha por CPF (Priorizando o PAGO)
+      const dataToExport = allRegs.reduce((acc: Registration[], current: Registration) => {
+        const existing = acc.find(item => item.cpf === current.cpf);
+        if (!existing) {
+          acc.push(current);
+        } else if (current.payment_status === 'paid' && existing.payment_status !== 'paid') {
+          const index = acc.indexOf(existing);
+          acc[index] = current;
+        }
+        return acc;
+      }, []).filter((reg: Registration) => {
+        const matchesSearch = 
+          reg.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          reg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          reg.cpf.includes(searchTerm)
+        
+        const matchesStatus = 
+          filterStatus === 'all' || 
+          reg.payment_status === filterStatus
+          
+        return matchesSearch && matchesStatus
+      })
+
       const csvHeaders = ['Nome', 'Email', 'CPF', 'Telefone', 'Gênero', 'Camiseta', 'Tipo Sanguíneo', 'Medicamentos', 'Emergência', 'Status']
-      const csvRows = allRegs.map(r => [
+      const csvRows = dataToExport.map((r: Registration) => [
         `"${r.full_name}"`,
         `"${r.email}"`,
         `"${r.cpf}"`,
@@ -332,17 +355,38 @@ export default function Dashboard() {
 
   const maskData = (val: string) => showSensitive ? val : '********'
 
-  const filteredRegistrations = registrations.filter(r => 
-    r.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.cpf.includes(searchTerm)
-  )
-
   const handleUpdateFee = async () => {
     setIsUpdatingFee(true)
-    await handleSaveSettings('fees', [{id: 'insurance', ...feeSettings}])
+    const feeSettings = { price: Number((document.getElementById('fee-price') as HTMLInputElement)?.value || 10) }
+    await handleSaveSettings('fees', [{id: 'insurance', name: 'Seguro Aventura', ...feeSettings}])
     setIsUpdatingFee(false)
   }
+
+  const filteredRegistrations = registrations
+    .reduce((acc, current) => {
+      // 🛡️ Lógica de Deduplicação: Se o CPF já existe na lista...
+      const existing = acc.find(item => item.cpf === current.cpf);
+      if (!existing) {
+        acc.push(current);
+      } else if (current.payment_status === 'paid' && existing.payment_status !== 'paid') {
+        // Se a nova inscrição for PAGA, ela substitui a PENDENTE antiga
+        const index = acc.indexOf(existing);
+        acc[index] = current;
+      }
+      return acc;
+    }, [] as Registration[])
+    .filter(reg => {
+      const matchesSearch = 
+        reg.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reg.cpf.includes(searchTerm)
+      
+      const matchesStatus = 
+        filterStatus === 'all' || 
+        reg.payment_status === filterStatus
+        
+      return matchesSearch && matchesStatus
+    })
 
   return (
     <div className="min-h-screen bg-[#FDFCFB] text-[#1A0F0A] font-sans selection:bg-black selection:text-white">
@@ -482,6 +526,34 @@ export default function Dashboard() {
                 <button onClick={() => handleSimulateDemand(10)} className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">+10 Atletas</button>
                 <button onClick={() => handleSimulateDemand(20)} className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">+20 Atletas</button>
                 <button onClick={handleResetEvent} className="px-6 py-3 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Zerar Evento</button>
+              </div>
+            </div>
+
+            {/* FILTROS E BUSCA */}
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+              <div className="flex bg-gray-100 p-1 rounded-2xl">
+                <button 
+                  onClick={() => setFilterStatus('all')}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === 'all' ? 'bg-white shadow-sm' : 'text-gray-500'}`}
+                >Todos</button>
+                <button 
+                  onClick={() => setFilterStatus('paid')}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === 'paid' ? 'bg-emerald-500 text-white shadow-sm' : 'text-gray-500'}`}
+                >Pagos</button>
+                <button 
+                  onClick={() => setFilterStatus('pending')}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === 'pending' ? 'bg-orange-500 text-white shadow-sm' : 'text-gray-500'}`}
+                >Pendentes</button>
+              </div>
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <input 
+                  type="text"
+                  placeholder="BUSCAR ATLETA (NOME, CPF OU EMAIL)..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-6 py-4 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
+                />
               </div>
             </div>
 
