@@ -306,7 +306,7 @@ export default function Dashboard() {
         `"${r.payment_status.toUpperCase()}"`
       ])
 
-      const csvContent = [csvHeaders, ...csvRows].map(e => e.join(';')).join('\n')
+      const csvContent = 'sep=;\n' + [csvHeaders, ...csvRows].map(e => e.join(';')).join('\n')
       
       // 💾 Download do Arquivo com BOM (Byte Order Mark) para Excel reconhecer UTF-8
       const BOM = '\uFEFF'
