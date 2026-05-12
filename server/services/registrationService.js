@@ -42,10 +42,17 @@ async function finalizeRegistration(registrationId, amount, paymentId = 'manual_
       .single();
 
     if (coupon) {
-      await supabase
-        .from('coupons')
-        .update({ used_count: coupon.used_count + 1 })
-        .eq('id', coupon.id);
+      // 🛡️ TRAVA DE SEGURANÇA: Só incrementa se ainda houver espaço no cupom
+      // Se já passou do limite (ex: 11/10), ele não trava a inscrição (pois o dinheiro já entrou),
+      // mas evita que o contador suba indefinidamente.
+      if (coupon.used_count < coupon.usage_limit) {
+        await supabase
+          .from('coupons')
+          .update({ used_count: coupon.used_count + 1 })
+          .eq('id', coupon.id);
+      } else {
+        console.warn(`⚠️ [CUPOM ESGOTADO] Cupom ${reg.coupon_code} atingiu o limite, mas a inscrição foi processada.`);
+      }
     }
   }
 

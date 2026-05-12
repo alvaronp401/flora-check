@@ -22,13 +22,36 @@ router.get('/admin/registrations', adminAuth, async (req, res) => {
 
     if (error) throw error;
 
+    // 🛡️ Busca estatísticas REAIS do banco inteiro (não apenas da página atual)
+    const { data: allStats, error: statsErr } = await supabase
+      .from('registrations')
+      .select('payment_status, final_price');
+
+    if (statsErr) throw statsErr;
+
+    // Busca configurações para calcular os lotes
+    const { data: settings } = await supabase.from('event_settings').select('*');
+    const thresholds = settings?.find(s => s.key === 'lot_thresholds')?.value || { lot1: 15, lot2: 30 };
+    
+    const paid = allStats.filter(r => r.payment_status === 'paid').length;
+    const pending = allStats.filter(r => r.payment_status === 'pending').length;
+    const occupied = allStats.filter(r => 
+      r.payment_status === 'paid' || 
+      (r.payment_status === 'pending' && r.reserved_until && new Date(r.reserved_until) > new Date())
+    ).length;
+
     const stats = {
       total: count,
-      paid: data.filter(r => r.payment_status === 'paid').length,
-      pending: data.filter(r => r.payment_status === 'pending').length,
-      revenue: data
+      paid,
+      pending,
+      revenue: allStats
         .filter(r => r.payment_status === 'paid')
-        .reduce((acc, curr) => acc + (Number(curr.final_price) || 110), 0)
+        .reduce((acc, curr) => acc + (Number(curr.final_price) || 110), 0),
+      lots: {
+        lot1: { current: Math.min(occupied, thresholds.lot1), max: thresholds.lot1 },
+        lot2: { current: Math.max(0, Math.min(occupied - thresholds.lot1, thresholds.lot2 - thresholds.lot1)), max: thresholds.lot2 - thresholds.lot1 },
+        lot3: { current: Math.max(0, occupied - thresholds.lot2) }
+      }
     };
 
     res.json({

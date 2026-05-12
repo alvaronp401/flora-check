@@ -1,9 +1,13 @@
 const { supabase, MAX_CAPACITY } = require('../config/clients');
 
-// 🎫 Lógica de Lotes: retorna nome e preço baseado na ocupação atual
-const getLotInfo = (occupied, lotPrices = { lot1: 110, lot2: 130, lot3: 150 }) => {
-  if (occupied < 15) return { name: 'PRIMEIRO', price: lotPrices.lot1 || 110 };
-  if (occupied < 30) return { name: 'SEGUNDO', price: lotPrices.lot2 || 130 };
+// 🎫 Lógica de Lotes: retorna nome e preço baseado na ocupação e limites dinâmicos
+const getLotInfo = (occupied, lotPrices, thresholds) => {
+  // Fallbacks seguros: se não houver no banco, usa 15 e 30
+  const t1 = thresholds?.lot1 || 15;
+  const t2 = thresholds?.lot2 || 30;
+
+  if (occupied < t1) return { name: 'PRIMEIRO', price: lotPrices.lot1 || 110 };
+  if (occupied < t2) return { name: 'SEGUNDO', price: lotPrices.lot2 || 130 };
   return { name: 'TERCEIRO', price: lotPrices.lot3 || 150 };
 };
 
@@ -20,8 +24,10 @@ async function getEventStatus() {
     (r.payment_status === 'pending' && r.reserved_until && new Date(r.reserved_until) > new Date())
   ).length;
 
-  // 🛡️ BUSCA DINÂMICA DE CONFIGURAÇÕES (Lotes e Taxas)
+  // 🛡️ BUSCA DINÂMICA DE CONFIGURAÇÕES (Lotes, Capacidade e Taxas)
   let lotPrices = { lot1: 110, lot2: 130, lot3: 150 };
+  let lotThresholds = { lot1: 15, lot2: 30 };
+  let eventCapacity = MAX_CAPACITY;
   let fees = [{ id: 'insurance', name: 'Seguro Aventura', price: 10.00 }];
   
   try {
@@ -30,23 +36,33 @@ async function getEventStatus() {
       .select('*');
 
     if (settings) {
+      // Preços dos lotes
       const priceSetting = settings.find(s => s.key === 'lot_prices');
       if (priceSetting) lotPrices = priceSetting.value;
 
+      // Limites dos lotes (Quando vira o lote)
+      const thresholdSetting = settings.find(s => s.key === 'lot_thresholds');
+      if (thresholdSetting) lotThresholds = thresholdSetting.value;
+
+      // Capacidade Total do Evento
+      const capacitySetting = settings.find(s => s.key === 'event_capacity');
+      if (capacitySetting) eventCapacity = Number(capacitySetting.value);
+
+      // Taxas
       const feeSetting = settings.find(s => s.key === 'fees');
       if (feeSetting) fees = feeSetting.value;
     }
   } catch (err) {
-    console.log('💡 Info: Usando valores padrão.');
+    console.log('💡 Info: Usando valores padrão por falha na busca.');
   }
 
-  const lot = getLotInfo(occupied, lotPrices);
+  const lot = getLotInfo(occupied, lotPrices, lotThresholds);
 
   return {
-    capacity: MAX_CAPACITY,
+    capacity: eventCapacity,
     occupied,
-    available: Math.max(0, MAX_CAPACITY - occupied),
-    is_sold_out: occupied >= MAX_CAPACITY,
+    available: Math.max(0, eventCapacity - occupied),
+    is_sold_out: occupied >= eventCapacity,
     currentLot: lot,
     fees
   };

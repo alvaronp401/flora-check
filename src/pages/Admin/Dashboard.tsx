@@ -53,6 +53,11 @@ interface Stats {
   paid: number
   pending: number
   revenue: number
+  lots: {
+    lot1: { current: number, max: number }
+    lot2: { current: number, max: number }
+    lot3: { current: number }
+  }
 }
 
 export default function Dashboard() {
@@ -108,7 +113,7 @@ export default function Dashboard() {
         'Authorization': session ? `Bearer ${session.access_token}` : ''
       }
       
-      const res = await fetch(`${API_URL}/admin/registrations?page=${page}&limit=10`, { headers })
+      const res = await fetch(`${API_URL}/admin/registrations?page=${page}&limit=100`, { headers })
       if (res.status === 401) throw new Error('Sessão expirada. Faça login novamente.')
       if (res.status === 403) throw new Error('Acesso negado! Chave mestra inválida.')
       
@@ -301,10 +306,11 @@ export default function Dashboard() {
         `"${r.payment_status.toUpperCase()}"`
       ])
 
-      const csvContent = [csvHeaders, ...csvRows].map(e => e.join(',')).join('\n')
+      const csvContent = [csvHeaders, ...csvRows].map(e => e.join(';')).join('\n')
       
-      // 💾 Download do Arquivo
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      // 💾 Download do Arquivo com BOM (Byte Order Mark) para Excel reconhecer UTF-8
+      const BOM = '\uFEFF'
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
       link.setAttribute('href', url)
@@ -414,6 +420,51 @@ export default function Dashboard() {
                   <h3 className="text-3xl font-black tracking-tighter">{s.val}</h3>
                 </div>
               ))}
+            </div>
+            
+            {/* LOT STATUS CARDS - 📊 VISÃO REAL TIME POR LOTE */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">1º Lote (Ativo)</p>
+                <div className="flex items-end justify-between">
+                  <h3 className="text-2xl font-black">{stats?.lots.lot1.current} / {stats?.lots.lot1.max}</h3>
+                  <div className="text-[10px] font-bold text-gray-300">Limite: 15</div>
+                </div>
+                <div className="mt-4 h-1.5 w-full bg-gray-50 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-500 transition-all duration-500" 
+                    style={{ width: `${Math.min(100, ((stats?.lots.lot1.current || 0) / (stats?.lots.lot1.max || 15)) * 100)}%` }}
+                  />
+                </div>
+              </div>
+              
+              <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">2º Lote</p>
+                <div className="flex items-end justify-between">
+                  <h3 className="text-2xl font-black">{stats?.lots.lot2.current} / {stats?.lots.lot2.max}</h3>
+                  <div className="text-[10px] font-bold text-gray-300">Limite: 15</div>
+                </div>
+                <div className="mt-4 h-1.5 w-full bg-gray-50 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-emerald-500 transition-all duration-500" 
+                    style={{ width: `${Math.min(100, ((stats?.lots.lot2.current || 0) / (stats?.lots.lot2.max || 15)) * 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">3º Lote</p>
+                <div className="flex items-end justify-between">
+                  <h3 className="text-2xl font-black">{stats?.lots.lot3.current} / 20</h3>
+                  <div className="text-[10px] font-bold text-gray-300">Final</div>
+                </div>
+                <div className="mt-4 h-1.5 w-full bg-gray-50 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-purple-500 transition-all duration-500" 
+                    style={{ width: `${Math.min(100, ((stats?.lots.lot3.current || 0) / 20) * 100)}%` }}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* LABORATÓRIO DE TESTES */}
