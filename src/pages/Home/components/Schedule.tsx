@@ -88,18 +88,10 @@ export const Schedule: React.FC = () => {
             ))}
           </div>
           <PartnersCarousel />
-          <div className="mt-8 flex flex-col items-center gap-4 border-t border-slate-100 pt-8 w-full">
+          <div className="mt-8 flex flex-col items-center border-t border-slate-100 pt-8 pb-4 w-full">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
               Leia os <Link to="/terms" className="text-blue-600 underline">termos de uso</Link> e <Link to="/privacy" className="text-blue-600 underline">privacidade</Link>
             </p>
-            <a 
-              href="https://instagram.com/eualvaronoronha" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 hover:text-blue-600 transition-colors text-center leading-relaxed"
-            >
-              desenvolvido por: <span className="text-blue-600">@eualvaronoronha</span> • entre em contato
-            </a>
           </div>
         </div>
       </div>
