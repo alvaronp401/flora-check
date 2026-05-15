@@ -30,13 +30,13 @@ const instructors = [
 export const Schedule: React.FC = () => {
   return (
     <section className="bg-slate-50 py-24 md:py-32">
-      <div className="max-w-4xl mx-auto px-6">
+      {/* 🏃‍♂️ Injeção do Carrossel de Atletas Confirmados (Horizontal) antes da cronologia e do título */}
+      <ConfirmedAthletesCarousel />
+
+      <div className="max-w-4xl mx-auto px-6 mt-16">
         <h2 className="text-3xl md:text-5xl font-black uppercase mb-16 tracking-tighter text-center">
           Programação <span className="text-blue-600">Oficial</span>
         </h2>
-
-        {/* 🏃‍♂️ Injeção do Carrossel de Atletas Confirmados antes da cronologia */}
-        <ConfirmedAthletesCarousel />
         
         <div className="space-y-4 mb-24">
           {schedule.map((item, i) => (
