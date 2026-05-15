@@ -51,8 +51,8 @@ export const ConfirmedAthletesCarousel: React.FC = () => {
           100% { transform: translateX(-25%); } /* Transladar 25% porque quadruplicamos o array */
         }
         .animate-marquee-horizontal {
-          /* Velocidade sincronizada com o MarqueeBanner e PartnersCarousel: 19s */
-          animation: marquee-horizontal 19s linear infinite; 
+          /* Velocidade reduzida significativamente para facilitar a leitura dos nomes */
+          animation: marquee-horizontal 35s linear infinite; 
         }
         .pause:hover {
           animation-play-state: paused;
