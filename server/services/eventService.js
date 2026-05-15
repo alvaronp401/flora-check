@@ -1,5 +1,47 @@
 const { supabase, MAX_CAPACITY } = require('../config/clients');
 
+// 🛡️ Função de Sanitização (OWASP Top 10 - Prevenção contra XSS / Injection)
+// Impede que um usuário malicioso cadastre o nome como "<script>alert('Hacked')</script>"
+const sanitizeInput = (str) => {
+  if (!str) return '';
+  // Remove caracteres perigosos usados em injeções de HTML/JS e SQL
+  return str.replace(/[<>\/\\'";=\(\)]/g, '').trim();
+};
+
+// 🏃‍♂️ Consulta apenas os primeiros nomes de quem já está pago (para o carrossel)
+async function getConfirmedAthletes() {
+  const { data, error } = await supabase
+    .from('registrations')
+    .select('full_name')
+    .eq('payment_status', 'paid');
+
+  if (error) throw error;
+
+  // Regra de Negócio: Pegamos Nome e Sobrenome e blindamos contra ataques (OWASP)
+  const displayNames = data
+    .filter(r => r.full_name)
+    .map(r => {
+      // 1. Sanitiza o input do banco contra injeções
+      const cleanName = sanitizeInput(r.full_name);
+      
+      // 2. Separa por espaços para pegar o Nome e o Sobrenome
+      const parts = cleanName.split(' ').filter(Boolean); // filter(Boolean) remove espaços extras
+      
+      if (parts.length > 1) {
+        // Pega o Primeiro e o Último nome (Ex: João ... Silva)
+        return `${parts[0]} ${parts[parts.length - 1]}`;
+      }
+      
+      // Se tiver só um nome, retorna só ele
+      return parts[0] || '';
+    })
+    .filter(name => name.length > 2); // Garante que não retorne strings vazias ou letras soltas
+  
+  // Retorna a lista
+  return displayNames;
+}
+
+
 // 🎫 Lógica de Lotes: retorna nome e preço baseado na ocupação e limites dinâmicos
 const getLotInfo = (occupied, lotPrices, thresholds) => {
   // Fallbacks seguros: se não houver no banco, usa 15 e 30
@@ -68,4 +110,4 @@ async function getEventStatus() {
   };
 }
 
-module.exports = { getLotInfo, getEventStatus };
+module.exports = { getLotInfo, getEventStatus, getConfirmedAthletes };

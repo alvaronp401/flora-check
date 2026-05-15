@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import johnImg from '../../../assets/colaborador1.png'
 import aleImg from '../../../assets/colaborador3.png'
 import { PartnersCarousel } from './PartnersCarousel'
+import { ConfirmedAthletesCarousel } from './ConfirmedAthletesCarousel'
 
 const schedule = [
   { time: '07:00', event: 'Coffee break & Check-in' },
@@ -33,6 +34,9 @@ export const Schedule: React.FC = () => {
         <h2 className="text-3xl md:text-5xl font-black uppercase mb-16 tracking-tighter text-center">
           Programação <span className="text-blue-600">Oficial</span>
         </h2>
+
+        {/* 🏃‍♂️ Injeção do Carrossel de Atletas Confirmados antes da cronologia */}
+        <ConfirmedAthletesCarousel />
         
         <div className="space-y-4 mb-24">
           {schedule.map((item, i) => (

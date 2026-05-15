@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { getEventStatus } = require('../services/eventService');
+const { getEventStatus, getConfirmedAthletes } = require('../services/eventService');
 
 const router = Router();
 
@@ -11,6 +11,17 @@ router.get('/event-status', async (req, res) => {
     res.json(status);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao consultar status do evento.' });
+  }
+});
+
+// 🏃‍♂️ GET /confirmed-athletes
+// Consumido pelo ConfirmedAthletesCarousel na página inicial
+router.get('/confirmed-athletes', async (req, res) => {
+  try {
+    const athletes = await getConfirmedAthletes();
+    res.json(athletes);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar atletas confirmados.' });
   }
 });
 
