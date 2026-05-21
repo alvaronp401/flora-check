@@ -60,6 +60,15 @@ interface Stats {
   }
 }
 
+/**
+ * Remove acentos e diacríticos de uma string para evitar problemas de codificação
+ * em leitores de CSV legados.
+ * Exemplo: "João" -> "Joao", "Mônica" -> "Monica", "Débora" -> "Debora"
+ */
+const removeAccents = (str: string): string => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 export default function Dashboard() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'registrations' | 'coupons' | 'settings'>('registrations')
@@ -317,7 +326,7 @@ export default function Dashboard() {
 
       const csvHeaders = ['Nome', 'Email', 'CPF', 'Telefone', 'Gênero', 'Camiseta', 'Tipo Sanguíneo', 'Medicamentos', 'Emergência', 'Status']
       const csvRows = dataToExport.map((r: Registration) => [
-        `"${r.full_name}"`,
+        `"${removeAccents(r.full_name)}"`,
         `"${r.email}"`,
         `"${r.cpf}"`,
         `"${r.phone}"`,
