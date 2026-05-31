@@ -54,16 +54,18 @@ const getLotInfo = (occupied, lotPrices, thresholds) => {
 };
 
 // 📊 Consulta o banco e retorna o status completo do evento
-async function getEventStatus() {
+async function getEventStatus(excludeRegistrationId = null) {
   const { data, error } = await supabase
     .from('registrations')
-    .select('payment_status, reserved_until');
+    .select('id, payment_status, reserved_until');
 
   if (error) throw error;
 
   const occupied = data.filter(r =>
-    r.payment_status === 'paid' ||
-    (r.payment_status === 'pending' && r.reserved_until && new Date(r.reserved_until) > new Date())
+    r.id !== excludeRegistrationId && (
+      r.payment_status === 'paid' ||
+      (r.payment_status === 'pending' && r.reserved_until && new Date(r.reserved_until) > new Date())
+    )
   ).length;
 
   // 🛡️ BUSCA DINÂMICA DE CONFIGURAÇÕES (Lotes, Capacidade e Taxas)

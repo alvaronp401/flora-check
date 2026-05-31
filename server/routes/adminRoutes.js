@@ -152,4 +152,55 @@ router.post('/admin/settings', adminAuth, async (req, res) => {
   }
 });
 
+// ➕ POST /admin/registrations — Cadastra um atleta manualmente pelo painel admin (Sênior)
+router.post('/admin/registrations', adminAuth, async (req, res) => {
+  try {
+    const { 
+      full_name, 
+      cpf, 
+      email, 
+      phone, 
+      emergency_phone, 
+      blood_type, 
+      medication, 
+      gender, 
+      shirt_size, 
+      payment_status 
+    } = req.body;
+
+    // Regra Sênior 🧠: Se o atleta for cadastrado como 'paid' (pago),
+    // estendemos a reserva dele até 2099 para nunca expirar.
+    // Se for 'pending' (pendente), damos a janela padrão de 15 minutos para pagamento.
+    const reserved_until = payment_status === 'paid' 
+      ? '2099-12-31T23:59:59Z' 
+      : new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    const { data, error } = await supabase
+      .from('registrations')
+      .insert([{
+        full_name,
+        cpf,
+        email,
+        phone,
+        emergency_phone,
+        blood_type,
+        medication: medication || '',
+        gender,
+        shirt_size,
+        payment_status,
+        reserved_until,
+        final_price: payment_status === 'paid' ? 110.00 : null
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ message: 'Atleta cadastrado com sucesso!', athlete: data });
+  } catch (error) {
+    console.error('❌ Erro no cadastro manual de atleta:', error);
+    res.status(500).json({ error: 'Erro interno ao cadastrar atleta manualmente.' });
+  }
+});
+
 module.exports = router;

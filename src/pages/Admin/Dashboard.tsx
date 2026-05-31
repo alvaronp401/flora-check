@@ -13,7 +13,8 @@ import {
   LogOut,
   CircleDollarSign,
   Eye,
-  EyeOff
+  EyeOff,
+  X
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useNavigate } from 'react-router-dom'
@@ -98,6 +99,23 @@ export default function Dashboard() {
   })
   
   const [isUpdatingFee, setIsUpdatingFee] = useState(false)
+  
+  // ➕ Estados do Modal de Cadastro Manual (Sênior)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isSubmittingManual, setIsSubmittingManual] = useState(false)
+  const [manualError, setManualError] = useState('')
+  const [newAthlete, setNewAthlete] = useState({
+    full_name: '',
+    cpf: '',
+    email: '',
+    phone: '',
+    emergency_phone: '',
+    blood_type: 'A+',
+    medication: '',
+    gender: 'Masculino',
+    shirt_size: 'M',
+    payment_status: 'paid' as 'paid' | 'pending'
+  })
 
   useEffect(() => {
     if (adminSecret) {
@@ -179,6 +197,47 @@ export default function Dashboard() {
       if (res.ok) fetchData()
     } catch (error) {
       alert('Erro ao confirmar pagamento')
+    }
+  }
+
+  const handleCreateAthlete = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmittingManual(true)
+    setManualError('')
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(`${API_URL}/admin/registrations`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-secret': adminSecret,
+          'Authorization': session ? `Bearer ${session.access_token}` : ''
+        },
+        body: JSON.stringify(newAthlete)
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setIsAddModalOpen(false)
+        setNewAthlete({
+          full_name: '',
+          cpf: '',
+          email: '',
+          phone: '',
+          emergency_phone: '',
+          blood_type: 'A+',
+          medication: '',
+          gender: 'Masculino',
+          shirt_size: 'M',
+          payment_status: 'paid'
+        })
+        fetchData()
+      } else {
+        setManualError(data.error || 'Erro ao cadastrar atleta')
+      }
+    } catch (error: any) {
+      setManualError(error.message || 'Erro ao conectar ao servidor')
+    } finally {
+      setIsSubmittingManual(false)
     }
   }
 
@@ -585,12 +644,20 @@ export default function Dashboard() {
                     className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-14 pr-6 outline-none focus:ring-2 ring-black/5 text-[10px] font-black uppercase tracking-widest"
                   />
                 </div>
-                <button 
-                  onClick={handleExportCSV}
-                  className="flex items-center justify-center gap-2 px-6 md:px-8 py-4 bg-gray-50 hover:bg-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all w-full md:w-auto"
-                >
-                  <Download size={16} /> Exportar CSV
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <button 
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="flex items-center justify-center gap-2 px-6 md:px-8 py-4 bg-black hover:bg-black/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all w-full sm:w-auto shadow-sm"
+                  >
+                    <Plus size={16} /> Adicionar Atleta
+                  </button>
+                  <button 
+                    onClick={handleExportCSV}
+                    className="flex items-center justify-center gap-2 px-6 md:px-8 py-4 bg-gray-50 hover:bg-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all w-full sm:w-auto"
+                  >
+                    <Download size={16} /> Exportar CSV
+                  </button>
+                </div>
               </div>
 
               <div className="overflow-x-auto w-full">
@@ -789,6 +856,188 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+
+      {/* MODAL DE CADASTRO MANUAL (SÊNIOR UX) */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="w-full max-w-2xl bg-white rounded-[40px] border border-gray-100 shadow-2xl p-8 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-300">
+            
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tighter">Novo Cadastro Manual</h2>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Insira os dados do atleta abaixo</p>
+              </div>
+              <button 
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-3 text-gray-400 hover:text-black rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {manualError && (
+              <div className="mb-6 bg-red-50 text-red-500 p-4 rounded-2xl border border-red-100 text-xs font-black uppercase tracking-widest">
+                {manualError}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateAthlete} className="space-y-6">
+              <div className="space-y-4">
+                <Input 
+                  label="Nome Completo" 
+                  placeholder="Como no documento" 
+                  value={newAthlete.full_name} 
+                  onChange={(e) => setNewAthlete({...newAthlete, full_name: e.target.value})} 
+                  required 
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input 
+                    label="CPF" 
+                    placeholder="000.000.000-00" 
+                    value={newAthlete.cpf} 
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})/, '$1-$2').replace(/(-\d{2})\d+?$/, '$1');
+                      setNewAthlete({...newAthlete, cpf: val});
+                    }} 
+                    required 
+                  />
+                  <Input 
+                    label="Celular" 
+                    placeholder="(00) 00000-0000" 
+                    value={newAthlete.phone} 
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').replace(/(-\d{4})\d+?$/, '$1');
+                      setNewAthlete({...newAthlete, phone: val});
+                    }} 
+                    required 
+                  />
+                </div>
+
+                <Input 
+                  label="E-mail" 
+                  type="email" 
+                  placeholder="exemplo@email.com" 
+                  value={newAthlete.email} 
+                  onChange={(e) => setNewAthlete({...newAthlete, email: e.target.value})} 
+                  required 
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input 
+                    label="Número de Emergência" 
+                    placeholder="(00) 00000-0000" 
+                    value={newAthlete.emergency_phone} 
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').replace(/(-\d{4})\d+?$/, '$1');
+                      setNewAthlete({...newAthlete, emergency_phone: val});
+                    }} 
+                    required 
+                  />
+                  <Input 
+                    label="Medicamento Controlado" 
+                    placeholder="Se sim, qual?" 
+                    value={newAthlete.medication} 
+                    onChange={(e) => setNewAthlete({...newAthlete, medication: e.target.value})} 
+                  />
+                </div>
+
+                {/* Tipo Sanguíneo */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Tipo Sanguíneo</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setNewAthlete({...newAthlete, blood_type: t})}
+                        className={`flex items-center justify-center h-11 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest ${newAthlete.blood_type === t ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-300 text-gray-400'}`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Gênero e Camiseta */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Gênero</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {['Masculino', 'Feminino'].map((g) => (
+                        <button
+                          key={g}
+                          type="button"
+                          onClick={() => setNewAthlete({...newAthlete, gender: g})}
+                          className={`flex items-center justify-center h-11 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest ${newAthlete.gender === g ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-300 text-gray-400'}`}
+                        >
+                          {g}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Tamanho da Camiseta</label>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {['PP', 'P', 'M', 'G', 'GG'].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setNewAthlete({...newAthlete, shirt_size: s})}
+                          className={`flex items-center justify-center h-11 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest ${newAthlete.shirt_size === s ? 'border-black bg-black text-white' : 'border-gray-100 hover:border-gray-300 text-gray-400'}`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status de Pagamento */}
+                <div className="space-y-2 pt-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Status da Inscrição</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setNewAthlete({...newAthlete, payment_status: 'paid'})}
+                      className={`flex items-center justify-center h-11 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest ${newAthlete.payment_status === 'paid' ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm' : 'border-gray-100 hover:border-gray-300 text-gray-400'}`}
+                    >
+                      Confirmada (Paga)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewAthlete({...newAthlete, payment_status: 'pending'})}
+                      className={`flex items-center justify-center h-11 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest ${newAthlete.payment_status === 'pending' ? 'border-orange-500 bg-orange-500 text-white shadow-sm' : 'border-gray-100 hover:border-gray-300 text-gray-400'}`}
+                    >
+                      Pendente (Reserva 15m)
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-6">
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  onClick={() => setIsAddModalOpen(false)} 
+                  className="flex-1 py-4"
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isSubmittingManual} 
+                  className="flex-1 py-4 bg-black text-white hover:bg-black/90"
+                >
+                  {isSubmittingManual ? 'Cadastrando...' : 'Confirmar Cadastro'}
+                </Button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
     </div>
   )
 }

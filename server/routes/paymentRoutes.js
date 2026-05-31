@@ -27,7 +27,7 @@ router.post('/create-preference',
       const { registrationId, email, fullName, couponCode } = req.body;
 
     // 🛡️ Verificação atômica de vaga no momento do clique
-    const status = await getEventStatus();
+    const status = await getEventStatus(registrationId);
     if (status.is_sold_out) {
       return res.status(400).json({ error: 'Desculpe, as vagas acabaram de esgotar!' });
     }
