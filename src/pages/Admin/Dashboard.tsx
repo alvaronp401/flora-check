@@ -70,6 +70,15 @@ const removeAccents = (str: string): string => {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+/**
+ * Normaliza o nome do atleta para comparar se é a mesma pessoa
+ * ignorando acentos, espaços extras e maiúsculas/minúsculas.
+ */
+const normalizeName = (name: string): string => {
+  if (!name) return ''
+  return name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '').trim()
+}
+
 export default function Dashboard() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'registrations' | 'coupons' | 'settings'>('registrations')
@@ -360,9 +369,12 @@ export default function Dashboard() {
         return
       }
 
-      // 🛡️ Lógica de Deduplicação para o CSV: Uma linha por CPF (Priorizando o PAGO)
+      // 🛡️ Lógica de Deduplicação para o CSV: Uma linha por CPF + Nome (Priorizando o PAGO)
       const dataToExport = allRegs.reduce((acc: Registration[], current: Registration) => {
-        const existing = acc.find(item => item.cpf === current.cpf);
+        const existing = acc.find(item => 
+          item.cpf === current.cpf && 
+          normalizeName(item.full_name) === normalizeName(current.full_name)
+        );
         if (!existing) {
           acc.push(current);
         } else if (current.payment_status === 'paid' && existing.payment_status !== 'paid') {
@@ -432,8 +444,11 @@ export default function Dashboard() {
 
   const filteredRegistrations = registrations
     .reduce((acc, current) => {
-      // 🛡️ Lógica de Deduplicação: Se o CPF já existe na lista...
-      const existing = acc.find(item => item.cpf === current.cpf);
+      // 🛡️ Lógica de Deduplicação: Se o CPF e Nome já existem na lista...
+      const existing = acc.find(item => 
+        item.cpf === current.cpf && 
+        normalizeName(item.full_name) === normalizeName(current.full_name)
+      );
       if (!existing) {
         acc.push(current);
       } else if (current.payment_status === 'paid' && existing.payment_status !== 'paid') {
