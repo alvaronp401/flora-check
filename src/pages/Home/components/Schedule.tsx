@@ -5,14 +5,41 @@ import aleImg from '../../../assets/colaborador3.png'
 import { PartnersCarousel } from './PartnersCarousel'
 import { ConfirmedAthletesCarousel } from './ConfirmedAthletesCarousel'
 
-const schedule = [
-  { time: '07:00', event: 'Coffee break & Check-in' },
-  { time: '07:20', event: 'Palestra Saúde Mental - Prof. Jairon Pinheiro' },
-  { time: '07:40', event: 'Aula de Ginástica - Jonathas Treinador' },
-  { time: '08:20', event: 'Trilha 6km (Leve/Iniciantes) - Alessandra Sousa' },
-  { time: '09:40', event: 'Sorteio e divulgação de parceiros' },
-  { time: '10:00', event: 'Encerramento' },
-]
+const eventSchedules: Record<string, { time: string; event: string }[]> = {
+  'trail-run-flona-2026': [
+    { time: '07:00', event: 'Coffee break & Check-in' },
+    { time: '07:20', event: 'Palestra Saúde Mental - Prof. Jairon Pinheiro' },
+    { time: '07:40', event: 'Aula de Ginástica - Jonathas Treinador' },
+    { time: '08:20', event: 'Trilha 6km (Leve/Iniciantes) - Alessandra Sousa' },
+    { time: '09:40', event: 'Sorteio e divulgação de parceiros' },
+    { time: '10:00', event: 'Encerramento' },
+  ],
+  'toneis-13-06': [
+    { time: 'A definir', event: 'Check-in e briefing dos atletas' },
+    { time: 'A definir', event: 'Aquecimento coletivo nos Tonéis' },
+    { time: 'A definir', event: 'Início da corrida de trilha / Check-out' },
+    { time: 'A definir', event: 'Encerramento da atividade nos Tonéis' }
+  ],
+  'treino-jonathas-aguas-claras': [
+    { time: 'A definir', event: 'Recepção e alongamento inicial' },
+    { time: 'A definir', event: 'Treino técnico de subida/descida com Jonathas' },
+    { time: 'A definir', event: 'Encerramento e feedback do treinador' }
+  ],
+  'alongamento-corrida-eixao-sul': [
+    { time: 'A definir', event: 'Ponto de encontro no Eixão Sul' },
+    { time: 'A definir', event: 'Alongamento com Jonathas Treinador' },
+    { time: 'A definir', event: 'Corrida/Caminhada de 5km' },
+    { time: 'A definir', event: 'Café da manhã coletivo & Socialização com seu Pet' },
+    { time: 'A definir', event: 'Encerramento da atividade' }
+  ],
+  'poco-azul-28-06': [
+    { time: 'A definir', event: 'Encontro na entrada do Poço Azul & Check-in' },
+    { time: 'A definir', event: 'Briefing e alongamento pré-trilha' },
+    { time: 'A definir', event: 'Início do percurso de Trilha / Corrida de Aventura' },
+    { time: 'A definir', event: 'Retorno, banho de poço (opcional) e confraternização' },
+    { time: 'A definir', event: 'Encerramento oficial' }
+  ]
+};
 
 const instructors = [
   { 
@@ -27,11 +54,18 @@ const instructors = [
   }
 ]
 
-export const Schedule: React.FC = () => {
+interface ScheduleProps {
+  eventId: string
+  slug: string
+}
+
+export const Schedule: React.FC<ScheduleProps> = ({ eventId, slug }) => {
+  const currentSchedule = eventSchedules[slug] || eventSchedules['trail-run-flona-2026']
+
   return (
     <section className="bg-slate-50 py-24 md:py-32">
       {/* 🏃‍♂️ Injeção do Carrossel de Atletas Confirmados (Horizontal) antes da cronologia e do título */}
-      <ConfirmedAthletesCarousel />
+      <ConfirmedAthletesCarousel eventId={eventId} />
 
       <div className="max-w-4xl mx-auto px-6 mt-16">
         <h2 className="text-3xl md:text-5xl font-black uppercase mb-16 tracking-tighter text-center">
@@ -39,7 +73,7 @@ export const Schedule: React.FC = () => {
         </h2>
         
         <div className="space-y-4 mb-24">
-          {schedule.map((item, i) => (
+          {currentSchedule.map((item, i) => (
             <div key={i} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8 bg-white p-6 rounded-3xl border border-slate-100 hover:border-slate-200 transition-all">
               <span className="text-xl font-black text-blue-600 min-w-[80px]">
                 {item.time}

@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../../../config/api';
 
-export const ConfirmedAthletesCarousel: React.FC = () => {
+interface ConfirmedAthletesCarouselProps {
+  eventId: string
+}
+
+export const ConfirmedAthletesCarousel: React.FC<ConfirmedAthletesCarouselProps> = ({ eventId }) => {
   const [athletes, setAthletes] = useState<string[]>([]);
 
   useEffect(() => {
-    fetch(`${API_URL}/confirmed-athletes`)
+    if (!eventId) return;
+
+    fetch(`${API_URL}/confirmed-athletes?eventId=${eventId}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -15,7 +21,7 @@ export const ConfirmedAthletesCarousel: React.FC = () => {
         }
       })
       .catch((err) => console.error('Erro ao buscar atletas:', err));
-  }, []);
+  }, [eventId]);
 
   if (athletes.length === 0) return null;
 
@@ -51,8 +57,8 @@ export const ConfirmedAthletesCarousel: React.FC = () => {
           100% { transform: translateX(-25%); } /* Transladar 25% porque quadruplicamos o array */
         }
         .animate-marquee-horizontal {
-          /* Velocidade reduzida significativamente para facilitar a leitura dos nomes */
-          animation: marquee-horizontal 35s linear infinite; 
+          /* Velocidade reduzida para tornar a leitura dos nomes extremamente confortável e suave */
+          animation: marquee-horizontal 120s linear infinite; 
         }
         .pause:hover {
           animation-play-state: paused;
@@ -61,3 +67,4 @@ export const ConfirmedAthletesCarousel: React.FC = () => {
     </div>
   );
 };
+

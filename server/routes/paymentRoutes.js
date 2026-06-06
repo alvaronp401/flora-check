@@ -26,79 +26,92 @@ router.post('/create-preference',
     try {
       const { registrationId, email, fullName, couponCode } = req.body;
 
-    // 🛡️ Verificação atômica de vaga no momento do clique
-    const status = await getEventStatus(registrationId);
-    if (status.is_sold_out) {
-      return res.status(400).json({ error: 'Desculpe, as vagas acabaram de esgotar!' });
-    }
-
-    // 💰 Preço começa no valor do lote atual
-    let finalPrice = status.currentLot.price;
-
-    // 🛡️ Soma as taxas obrigatórias (ex: Seguro Aventura)
-    if (status.fees && Array.isArray(status.fees)) {
-      const feesTotal = status.fees.reduce((acc, fee) => acc + fee.price, 0);
-      finalPrice += feesTotal;
-    }
-
-    // 🎟️ Aplica desconto de cupom se válido
-    if (couponCode) {
-      const { data: coupon } = await supabase
-        .from('coupons')
-        .select('*')
-        .eq('code', couponCode.toUpperCase())
+      // 1. Busca a inscrição para saber a qual evento ela pertence
+      const { data: registration, error: regError } = await supabase
+        .from('registrations')
+        .select('event_id')
+        .eq('id', registrationId)
         .single();
 
-      if (coupon && coupon.is_active && coupon.used_count < coupon.usage_limit) {
-        if (coupon.discount_type === 'percentage') {
-          finalPrice -= (finalPrice * coupon.discount_value) / 100;
-        } else {
-          finalPrice -= coupon.discount_value;
+      if (regError || !registration) {
+        return res.status(404).json({ error: 'Inscrição não encontrada.' });
+      }
+
+      const eventId = registration.event_id;
+
+      // 🛡️ Verificação atômica de vaga no momento do clique para o evento específico
+      const status = await getEventStatus(eventId, registrationId);
+      if (status.is_sold_out) {
+        return res.status(400).json({ error: 'Desculpe, as vagas acabaram de esgotar!' });
+      }
+
+      // 💰 Preço começa no valor do lote atual
+      let finalPrice = status.currentLot.price;
+
+      // 🛡️ Soma as taxas obrigatórias (ex: Seguro Aventura)
+      if (status.fees && Array.isArray(status.fees)) {
+        const feesTotal = status.fees.reduce((acc, fee) => acc + fee.price, 0);
+        finalPrice += feesTotal;
+      }
+
+      // 🎟️ Aplica desconto de cupom se válido
+      if (couponCode) {
+        const { data: coupon } = await supabase
+          .from('coupons')
+          .select('*')
+          .eq('code', couponCode.toUpperCase())
+          .single();
+
+        if (coupon && coupon.is_active && coupon.used_count < coupon.usage_limit) {
+          if (coupon.discount_type === 'percentage') {
+            finalPrice -= (finalPrice * coupon.discount_value) / 100;
+          } else {
+            finalPrice -= coupon.discount_value;
+          }
         }
       }
-    }
 
-    // 🕒 Reserva a vaga por 15 minutos
-    const reservedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      // 🕒 Reserva a vaga por 15 minutos
+      const reservedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
-    const { error: updateError } = await supabase
-      .from('registrations')
-      .update({
-        coupon_code: couponCode || null,
-        final_price: finalPrice,
-        reserved_until: reservedUntil
-      })
-      .eq('id', registrationId);
-
-    if (updateError) throw updateError;
-
-    // 🛡️ DOUBLE-CHECK ATÔMICO (A Garantia de 100%)
-    // Contamos novamente o estoque APÓS a nossa reserva entrar.
-    const finalCheck = await getEventStatus();
-    if (finalCheck.occupied > finalCheck.capacity) {
-      // Opa! Nós fomos o "51º" a entrar. Vamos desfazer a reserva.
-      await supabase
+      const { error: updateError } = await supabase
         .from('registrations')
-        .update({ reserved_until: null, final_price: null })
+        .update({
+          coupon_code: couponCode || null,
+          final_price: finalPrice,
+          reserved_until: reservedUntil
+        })
         .eq('id', registrationId);
-        
-      return res.status(400).json({ error: 'Desculpe, as vagas acabaram de esgotar exatamente agora!' });
-    }
 
-    // 🏦 Cria preferência no Mercado Pago
-    const preference = new Preference(mpClient);
-    
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+      if (updateError) throw updateError;
 
-    const preferenceBody = {
-      items: [{
-        id: 'kit-trail-run-2024',
-        title: 'Inscrição Trail Run Club',
-        quantity: 1,
-        unit_price: Number(finalPrice.toFixed(2)),
-        currency_id: 'BRL'
-      }],
+      // 🛡️ DOUBLE-CHECK ATÔMICO (A Garantia de 100%)
+      // Contamos novamente o estoque APÓS a nossa reserva entrar.
+      const finalCheck = await getEventStatus(eventId);
+      if (finalCheck.occupied > finalCheck.capacity) {
+        // Opa! Nós fomos o "51º" a entrar. Vamos desfazer a reserva.
+        await supabase
+          .from('registrations')
+          .update({ reserved_until: null, final_price: null })
+          .eq('id', registrationId);
+          
+        return res.status(400).json({ error: 'Desculpe, as vagas acabaram de esgotar exatamente agora!' });
+      }
+
+      // 🏦 Cria preferência no Mercado Pago
+      const preference = new Preference(mpClient);
+      
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+
+      const preferenceBody = {
+        items: [{
+          id: `kit-event-${eventId}`,
+          title: `Inscrição - ${status.title || 'Trail & Run Club'}`,
+          quantity: 1,
+          unit_price: Number(finalPrice.toFixed(2)),
+          currency_id: 'BRL'
+        }],
       payer: { email, name: fullName },
       external_reference: registrationId,
       payment_methods: {
@@ -108,7 +121,7 @@ router.post('/create-preference',
       expires: true,
       date_of_expiration: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
       back_urls: {
-        success: `${frontendUrl}/success`,
+        success: `${frontendUrl}/success?registrationId=${registrationId}`,
         failure: `${frontendUrl}/checkout`,
         pending: `${frontendUrl}/checkout`
       },

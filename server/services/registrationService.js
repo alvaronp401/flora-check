@@ -15,11 +15,11 @@ async function finalizeRegistration(registrationId, amount, paymentId = 'manual_
 
   // 🛡️ ÚLTIMA DEFESA: Verifica se o evento lotou enquanto o cara pagava
   const { getEventStatus } = require('./eventService');
-  const status = await getEventStatus();
+  const status = await getEventStatus(reg.event_id);
   
-  // Se já tem 50 pagos, bloqueia novos
-  if (status.paid >= status.capacity) {
-    console.error(`🚨 [OVERBOOKING BOCKED] Tentativa de pagamento para evento lotado: ${registrationId}`);
+  // Se já tem atingiu a capacidade do evento, bloqueia novos
+  if (status.occupied >= status.capacity) {
+    console.error(`🚨 [OVERBOOKING BLOCKED] Tentativa de pagamento para evento lotado: ${registrationId}`);
     return false;
   }
 

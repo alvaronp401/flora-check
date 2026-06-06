@@ -1,23 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Flame } from 'lucide-react'
-import { API_URL } from '../../../config/api'
 
-export const MarqueeBanner: React.FC = () => {
-  const [lotName, setLotName] = useState('PRIMEIRO')
+interface MarqueeBannerProps {
+  eventStatus: any
+}
 
-  useEffect(() => {
-    const fetchStatus = () => {
-      fetch(`${API_URL}/event-status`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.currentLot) setLotName(data.currentLot.name)
-        })
-        .catch(err => console.error('Erro ao buscar status:', err))
-    }
-    fetchStatus()
-    const interval = setInterval(fetchStatus, 5000)
-    return () => clearInterval(interval)
-  }, [])
+export const MarqueeBanner: React.FC<MarqueeBannerProps> = ({ eventStatus }) => {
+  const lotName = eventStatus?.currentLot?.name || 'PRIMEIRO'
+  const isSoldOut = eventStatus?.is_sold_out || eventStatus?.available <= 0
 
   const items = (
     <div className="flex items-center">
@@ -25,8 +15,11 @@ export const MarqueeBanner: React.FC = () => {
         <div key={i} className="flex items-center mx-4 md:mx-8 shrink-0">
           <span className="text-[10px] md:text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-6">
             <Flame size={14} className="text-orange-500 fill-orange-500" />
-            QUASE ESGOTANDO -
-            GARANTA SUA VAGA NO {lotName} LOTE
+            {isSoldOut ? (
+              'VAGAS COMPLETAMENTE ESGOTADAS - ACOMPANHE A AGENDA DE PRÓXIMOS EVENTOS'
+            ) : (
+              `QUASE ESGOTANDO - GARANTA SUA VAGA NO ${lotName} LOTE -`
+            )}
           </span>
         </div>
       ))}
@@ -57,3 +50,4 @@ export const MarqueeBanner: React.FC = () => {
     </nav>
   )
 }
+

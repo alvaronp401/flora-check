@@ -1,26 +1,15 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import atleta1 from '../../../assets/atleta1.png'
 import atleta2 from '../../../assets/atleta2.png'
 import atleta3 from '../../../assets/atleta3.png'
-import { API_URL } from '../../../config/api'
 
-export const FooterCTA: React.FC = () => {
-  const [eventStatus, setEventStatus] = useState({ available: 50, occupied: 0 })
+interface FooterCTAProps {
+  eventId: string
+  eventStatus: any
+}
 
-  useEffect(() => {
-    // 📡 Buscar status das vagas ao carregar
-    const fetchStatus = () => {
-      fetch(`${API_URL}/event-status`)
-        .then(res => res.json())
-        .then(data => setEventStatus(data))
-        .catch(err => console.error('Erro ao buscar status:', err))
-    }
-    fetchStatus()
-    const interval = setInterval(fetchStatus, 5000)
-    return () => clearInterval(interval)
-  }, [])
+export const FooterCTA: React.FC<FooterCTAProps> = ({ eventId, eventStatus }) => {
 
   return (
     <footer className="bg-[#1A0F0A] py-24 border-t border-white/5 relative overflow-hidden">
@@ -52,12 +41,14 @@ export const FooterCTA: React.FC = () => {
         </h2>
         
         <p className="text-gray-400 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
-          As vagas são limitadas. Garanta seu kit exclusivo e faça parte da Founder Edition no coração da FLONA.
+          {eventStatus?.slug === 'trail-run-flona-2026' 
+            ? 'As vagas são limitadas. Garanta seu kit exclusivo e faça parte da Founder Edition no coração da FLONA.'
+            : `As vagas são limitadas. Garanta sua participação no ${eventStatus?.title || 'evento'} e faça parte dessa experiência única.`}
         </p>
 
         <div className="flex flex-col items-center gap-6">
-          {eventStatus.available > 0 ? (
-            <Link to="/checkout" className="inline-block w-full md:w-auto">
+          {eventStatus?.available > 0 ? (
+            <Link to={`/checkout?eventId=${eventId}`} className="inline-block w-full md:w-auto">
               <Button variant="secondary" pulse showShimmer className="w-full md:w-auto text-xl py-6 px-16 group shadow-2xl">
                 QUERO ME INSCREVER AGORA
               </Button>
@@ -70,7 +61,7 @@ export const FooterCTA: React.FC = () => {
             </div>
           )}
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4B996] animate-pulse">
-            {eventStatus.available > 0 ? `Apenas ${eventStatus.available} vagas restantes` : 'Lote Final Esgotado'}
+            {eventStatus?.available > 0 ? `Apenas ${eventStatus.available} vagas restantes` : 'Lote Final Esgotado'}
           </p>
         </div>
 
@@ -78,7 +69,7 @@ export const FooterCTA: React.FC = () => {
       
       <div className="mt-20 pt-10 border-t border-white/10 flex flex-col items-center gap-8 max-w-6xl mx-auto px-6 relative z-10">
         <p className="text-gray-500 text-[9px] md:text-[10px] font-bold uppercase tracking-widest leading-loose text-center">
-          © 2026 Trail & Run Club • Flona Experience • CNPJ: 63.031.213/0001-09 <br /> Todos os direitos reservados
+          © 2026 Trail & Run Club • CNPJ: 63.031.213/0001-09 <br /> Todos os direitos reservados
         </p>
         
         <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12 text-gray-400 text-[10px] font-bold uppercase tracking-widest">

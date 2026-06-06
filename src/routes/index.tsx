@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom'
+import { Agenda } from '../pages/Home/Agenda'
 import Home from '../pages/Home'
 import Checkout from '../pages/Checkout'
 import Success from '../pages/Success'
@@ -10,11 +11,17 @@ import { Privacy } from '../pages/Legal/Privacy'
 /**
  * Maestro das Rotas 🎼
  * 
- * Agora com Camuflagem 'Stealth' e Login Blindado. 🛡️🔐
+ * Agora com suporte a Multi-Eventos:
+ * Rota '/' exibe a Agenda de Eventos.
+ * Rota '/evento/:slug' renderiza a Landing Page específica daquele evento.
  */
 export const router = createBrowserRouter([
   {
     path: '/',
+    element: <Agenda />,
+  },
+  {
+    path: '/evento/:slug',
     element: <Home />,
   },
   {
@@ -44,3 +51,4 @@ export const router = createBrowserRouter([
     element: <Privacy />,
   },
 ])
+

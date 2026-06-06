@@ -61,4 +61,4 @@ app.use('/coupon', sensitiveLimiter, couponRoutes);
 app.use(adminRoutes);
 
 // 🚀 Inicialização do Servidor
-app.listen(PORT, () => console.log(`🚀 Servidor Flora na porta ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor Trail & Run Club na porta ${PORT}`));

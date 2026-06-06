@@ -1,7 +1,67 @@
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, Calendar, MapPin, Trophy, ArrowRight } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
 
 export default function Success() {
+  const [searchParams] = useSearchParams()
+  const registrationId = searchParams.get('registrationId')
+  
+  const [loading, setLoading] = useState(!!registrationId)
+  const [regData, setRegData] = useState<any>(null)
+
+  useEffect(() => {
+    if (!registrationId) return
+
+    const fetchSuccessData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('registrations')
+          .select('*, events(*)')
+          .eq('id', registrationId)
+          .single()
+
+        if (error) throw error
+        if (data) {
+          setRegData(data)
+        }
+      } catch (err: any) {
+        console.error('Erro ao buscar inscrição de sucesso:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSuccessData()
+  }, [registrationId])
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = date.toLocaleDateString('pt-BR', { month: 'long' })
+    const year = date.getFullYear()
+    return `${day} de ${month}, ${year}`
+  }
+
+  const eventTitle = regData?.events?.title || 'Trail Run Flona 2026'
+  const eventSlug = regData?.events?.slug || 'trail-run-flona-2026'
+  const isFlona = eventSlug === 'trail-run-flona-2026'
+
+  const displayDate = regData?.events?.date ? formatDate(regData.events.date) : '06 de Junho, 2026'
+  const displayLocation = regData?.events?.location || 'Entrada Principal - FLONA'
+  const displayCategory = isFlona ? 'Trail Run Club - 06km' : 'Participação Confirmada'
+  const athleteName = regData?.full_name ? `, ${regData.full_name.trim().split(' ')[0]}` : ''
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF9] flex flex-col items-center justify-center gap-4">
+        <div className="w-12 h-12 rounded-full border-2 border-[#D4B996]/20 border-t-[#D4B996] animate-spin" />
+        <p className="text-gray-400 text-sm font-semibold tracking-wider uppercase font-sans">Carregando confirmação...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center py-12 px-6">
       <div className="max-w-md w-full bg-white p-10 rounded-[40px] shadow-2xl border border-gray-100 text-center relative overflow-hidden">
@@ -17,14 +77,16 @@ export default function Success() {
         </div>
 
         <h1 className="text-4xl font-black mb-4 tracking-tight">INSCRIÇÃO CONFIRMADA!</h1>
-        <p className="text-gray-500 font-medium mb-10">Parabéns, atleta! Seu kit Founder Edition já está reservado. Prepare os tênis para a FLONA.</p>
+        <p className="text-gray-500 font-medium mb-10">
+          Parabéns{athleteName}! Sua vaga no <span className="font-bold text-[#1A0F0A]">{eventTitle}</span> está garantida. Prepare os tênis para essa grande experiência!
+        </p>
 
         <div className="space-y-4 mb-10">
           <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
             <Calendar className="text-gray-400" size={20} />
             <div className="text-left">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Data do Evento</p>
-              <p className="font-bold text-sm">06 de Junho, 2026</p>
+              <p className="font-bold text-sm">{displayDate}</p>
             </div>
           </div>
 
@@ -32,7 +94,7 @@ export default function Success() {
             <MapPin className="text-gray-400" size={20} />
             <div className="text-left">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Local de Encontro</p>
-              <p className="font-bold text-sm">Entrada Principal - FLONA</p>
+              <p className="font-bold text-sm">{displayLocation}</p>
             </div>
           </div>
 
@@ -40,7 +102,7 @@ export default function Success() {
             <Trophy className="text-gray-400" size={20} />
             <div className="text-left">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Sua Categoria</p>
-              <p className="font-bold text-sm">Trail Run Club - 06km</p>
+              <p className="font-bold text-sm">{displayCategory}</p>
             </div>
           </div>
         </div>

@@ -1,22 +1,10 @@
-import React, { useState, useEffect } from 'react'
-import { API_URL } from '../../../config/api'
+interface KitProps {
+  event: any
+  eventStatus: any
+}
 
-export const Kit: React.FC = () => {
-  const [price, setPrice] = useState(110)
-
-  useEffect(() => {
-    const fetchStatus = () => {
-      fetch(`${API_URL}/event-status`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.currentLot) setPrice(data.currentLot.price)
-        })
-        .catch(err => console.error('Erro ao buscar status:', err))
-    }
-    fetchStatus()
-    const interval = setInterval(fetchStatus, 5000)
-    return () => clearInterval(interval)
-  }, [])
+export const Kit: React.FC<KitProps> = ({ eventStatus }) => {
+  const price = eventStatus?.currentLot?.price || 110
 
   return (
     <section className="bg-[#4B2C20] py-32 relative overflow-hidden">

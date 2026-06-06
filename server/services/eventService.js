@@ -1,50 +1,43 @@
-const { supabase, MAX_CAPACITY } = require('../config/clients');
+const { supabase } = require('../config/clients');
 
 // 🛡️ Função de Sanitização (OWASP Top 10 - Prevenção contra XSS / Injection)
-// Impede que um usuário malicioso cadastre o nome como "<script>alert('Hacked')</script>"
 const sanitizeInput = (str) => {
   if (!str) return '';
-  // Remove caracteres perigosos usados em injeções de HTML/JS e SQL
   return str.replace(/[<>\/\\'";=\(\)]/g, '').trim();
 };
 
-// 🏃‍♂️ Consulta apenas os primeiros nomes de quem já está pago (para o carrossel)
-async function getConfirmedAthletes() {
+// 🏃‍♂️ Consulta apenas os primeiros nomes de quem já está pago (para o carrossel) de um evento específico
+async function getConfirmedAthletes(eventId) {
+  if (!eventId) {
+    throw new Error('eventId é obrigatório para obter atletas confirmados.');
+  }
+
   const { data, error } = await supabase
     .from('registrations')
     .select('full_name')
+    .eq('event_id', eventId)
     .eq('payment_status', 'paid');
 
   if (error) throw error;
 
-  // Regra de Negócio: Pegamos Nome e Sobrenome e blindamos contra ataques (OWASP)
   const displayNames = data
     .filter(r => r.full_name)
     .map(r => {
-      // 1. Sanitiza o input do banco contra injeções
       const cleanName = sanitizeInput(r.full_name);
-      
-      // 2. Separa por espaços para pegar o Nome e o Sobrenome
-      const parts = cleanName.split(' ').filter(Boolean); // filter(Boolean) remove espaços extras
+      const parts = cleanName.split(' ').filter(Boolean);
       
       if (parts.length > 1) {
-        // Pega o Primeiro e o Último nome (Ex: João ... Silva)
         return `${parts[0]} ${parts[parts.length - 1]}`;
       }
-      
-      // Se tiver só um nome, retorna só ele
       return parts[0] || '';
     })
-    .filter(name => name.length > 2); // Garante que não retorne strings vazias ou letras soltas
+    .filter(name => name.length > 2);
   
-  // Retorna a lista
   return displayNames;
 }
 
-
 // 🎫 Lógica de Lotes: retorna nome e preço baseado na ocupação e limites dinâmicos
 const getLotInfo = (occupied, lotPrices, thresholds) => {
-  // Fallbacks seguros: se não houver no banco, usa 15 e 30
   const t1 = thresholds?.lot1 || 15;
   const t2 = thresholds?.lot2 || 30;
 
@@ -53,56 +46,49 @@ const getLotInfo = (occupied, lotPrices, thresholds) => {
   return { name: 'TERCEIRO', price: lotPrices.lot3 || 150 };
 };
 
-// 📊 Consulta o banco e retorna o status completo do evento
-async function getEventStatus(excludeRegistrationId = null) {
-  const { data, error } = await supabase
+// 📊 Consulta o banco e retorna o status completo de um evento específico
+async function getEventStatus(eventId, excludeRegistrationId = null) {
+  if (!eventId) {
+    throw new Error('eventId é obrigatório para consultar o status do evento.');
+  }
+
+  // 1. Busca as configurações direto do evento na tabela 'events'
+  const { data: event, error: eventError } = await supabase
+    .from('events')
+    .select('*')
+    .eq('id', eventId)
+    .single();
+
+  if (eventError || !event) {
+    throw new Error(`Evento com ID ${eventId} não foi encontrado.`);
+  }
+
+  // 2. Busca todas as inscrições associadas a este evento específico
+  const { data: registrations, error: regError } = await supabase
     .from('registrations')
-    .select('id, payment_status, reserved_until');
+    .select('id, payment_status, reserved_until')
+    .eq('event_id', eventId);
 
-  if (error) throw error;
+  if (regError) throw regError;
 
-  const occupied = data.filter(r =>
+  const occupied = registrations.filter(r =>
     r.id !== excludeRegistrationId && (
       r.payment_status === 'paid' ||
       (r.payment_status === 'pending' && r.reserved_until && new Date(r.reserved_until) > new Date())
     )
   ).length;
 
-  // 🛡️ BUSCA DINÂMICA DE CONFIGURAÇÕES (Lotes, Capacidade e Taxas)
-  let lotPrices = { lot1: 110, lot2: 130, lot3: 150 };
-  let lotThresholds = { lot1: 15, lot2: 30 };
-  let eventCapacity = MAX_CAPACITY;
-  let fees = [{ id: 'insurance', name: 'Seguro Aventura', price: 10.00 }];
-  
-  try {
-    const { data: settings } = await supabase
-      .from('event_settings')
-      .select('*');
-
-    if (settings) {
-      // Preços dos lotes
-      const priceSetting = settings.find(s => s.key === 'lot_prices');
-      if (priceSetting) lotPrices = priceSetting.value;
-
-      // Limites dos lotes (Quando vira o lote)
-      const thresholdSetting = settings.find(s => s.key === 'lot_thresholds');
-      if (thresholdSetting) lotThresholds = thresholdSetting.value;
-
-      // Capacidade Total do Evento
-      const capacitySetting = settings.find(s => s.key === 'event_capacity');
-      if (capacitySetting) eventCapacity = Number(capacitySetting.value);
-
-      // Taxas
-      const feeSetting = settings.find(s => s.key === 'fees');
-      if (feeSetting) fees = feeSetting.value;
-    }
-  } catch (err) {
-    console.log('💡 Info: Usando valores padrão por falha na busca.');
-  }
+  const lotPrices = event.lot_prices || { lot1: 110, lot2: 130, lot3: 150 };
+  const lotThresholds = event.lot_thresholds || { lot1: 15, lot2: 30 };
+  const eventCapacity = Number(event.capacity) || 50;
+  const fees = event.fees || [];
 
   const lot = getLotInfo(occupied, lotPrices, lotThresholds);
 
   return {
+    id: event.id,
+    title: event.title,
+    slug: event.slug,
     capacity: eventCapacity,
     occupied,
     available: Math.max(0, eventCapacity - occupied),
@@ -113,3 +99,4 @@ async function getEventStatus(excludeRegistrationId = null) {
 }
 
 module.exports = { getLotInfo, getEventStatus, getConfirmedAthletes };
+

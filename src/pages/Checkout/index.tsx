@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Ticket, CheckCircle2, AlertCircle, X, ShieldAlert } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
@@ -37,6 +37,9 @@ const checkoutSchema = yup.object({
 }).required()
 
 export default function Checkout() {
+  const [searchParams] = useSearchParams()
+  const eventId = searchParams.get('eventId') || 'e0123456-789a-bcde-f012-3456789abcde'
+
   const [couponInput, setCouponInput] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; type: string; value: number } | null>(null)
   const [couponError, setCouponError] = useState('')
@@ -45,8 +48,9 @@ export default function Checkout() {
   const [isValidatingEmail, setIsValidatingEmail] = useState(false)
   const [emailExternalError, setEmailExternalError] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState(600)
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true)
   const [eventStatus, setEventStatus] = useState<any>({ 
-    available: 50, 
+    available: 0, 
     occupied: 0, 
     currentLot: { name: 'PRIMEIRO', price: 110 },
     fees: [] 
@@ -57,10 +61,16 @@ export default function Checkout() {
   // 📡 Buscar status e Gerenciar Timer Persistente
   useEffect(() => {
     const fetchStatus = () => {
-      fetch(`${API_URL}/event-status`)
+      fetch(`${API_URL}/event-status?eventId=${eventId}`)
         .then(res => res.json())
-        .then(data => setEventStatus(data))
-        .catch(err => console.error('Erro ao buscar status:', err))
+        .then(data => {
+          setEventStatus(data)
+          setIsLoadingStatus(false)
+        })
+        .catch(err => {
+          console.error('Erro ao buscar status:', err)
+          setIsLoadingStatus(false)
+        })
     }
     fetchStatus()
     const intervalStatus = setInterval(fetchStatus, 15000)
@@ -94,7 +104,7 @@ export default function Checkout() {
       clearInterval(intervalStatus)
       clearInterval(timerInterval)
     }
-  }, [navigate])
+  }, [navigate, eventId])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -210,7 +220,7 @@ export default function Checkout() {
     }
 
     try {
-      // 1. Busca a inscrição no Supabase
+      // 1. Cria a inscrição no Supabase vinculada ao event_id
       const { data: registration, error: dbError } = await supabase
         .from('registrations')
         .insert([{
@@ -225,6 +235,7 @@ export default function Checkout() {
           shirt_size: data.shirtSize,
           payment_status: 'pending',
           coupon_code: appliedCoupon?.code || null,
+          event_id: eventId,
           reserved_until: new Date(Date.now() + 15 * 60 * 1000).toISOString()
         }])
         .select()
@@ -266,6 +277,16 @@ export default function Checkout() {
     }
   }
 
+  // 🛡️ TELA DE CARREGAMENTO DE STATUS (OWASP DESIGN DE DEFESA)
+  if (isLoadingStatus) {
+    return (
+      <div className="min-h-screen bg-[#FDFBF9] flex flex-col items-center justify-center px-6">
+        <div className="w-12 h-12 rounded-full border-2 border-[#D4B996]/20 border-t-[#D4B996] animate-spin" />
+        <p className="text-gray-500 text-sm font-semibold tracking-wider uppercase font-sans mt-4">Verificando vagas disponíveis...</p>
+      </div>
+    )
+  }
+
   // 🛡️ TELA DE SOLD OUT (SÊNIOR UX)
   if (eventStatus.available <= 0 && !isSubmitting) {
     return (
@@ -277,7 +298,7 @@ export default function Checkout() {
           <div>
             <h1 className="text-4xl font-black text-[#1A0F0A] uppercase tracking-tighter mb-4">Vagas Esgotadas!</h1>
             <p className="text-gray-500 font-medium leading-relaxed">
-              Infelizmente todas as vagas para a <span className="font-bold text-[#1A0F0A]">Founder Edition 2026</span> foram preenchidas.
+              Infelizmente todas as vagas para o <span className="font-bold text-[#1A0F0A]">{eventStatus.title || 'evento'}</span> foram preenchidas.
             </p>
           </div>
           <Link to="/" className="block">
@@ -328,7 +349,11 @@ export default function Checkout() {
 
         <div className="mb-6">
           <h1 className="text-4xl font-black text-[#1A0F0A] mb-4 tracking-tighter uppercase">Finalize sua Inscrição</h1>
-          <p className="text-gray-500 font-medium">Garanta seu kit para o maior evento da Flona 2026 e preencha o formulário abaixo para finalizar sua inscrição ( sua vaga está garantida durante 10 minutos contados ).</p>
+          <p className="text-gray-500 font-medium">
+            {eventStatus?.slug === 'trail-run-flona-2026'
+              ? 'Garanta seu kit para o maior evento da Flona 2026 e preencha o formulário abaixo para finalizar sua inscrição ( sua vaga está garantida durante 10 minutos contados ).'
+              : `Garanta sua vaga no ${eventStatus?.title || 'evento'} e preencha o formulário abaixo para finalizar sua inscrição ( sua vaga está garantida durante 10 minutos contados ).`}
+          </p>
           
           <div className="mt-8 bg-gray-50/50 border border-gray-100 p-6 rounded-3xl">
             <div className="flex flex-col gap-1">
@@ -339,7 +364,7 @@ export default function Checkout() {
             </div>
           </div>
         </div>
-        <ScheduleCard />
+        <ScheduleCard slug={eventStatus?.slug} />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm space-y-6">

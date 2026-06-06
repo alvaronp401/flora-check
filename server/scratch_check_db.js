@@ -14,30 +14,18 @@ const supabase = createClient(
 
 async function check() {
   try {
-    const { data, error } = await supabase.from('event_settings').select('*');
-    if (error) throw error;
-    console.log('--- EVENT SETTINGS ---');
-    console.log(JSON.stringify(data, null, 2));
-    
-    // Contagem manual de ocupados para comparar com a lógica do site
+    const { data: events, error: eventErr } = await supabase.from('events').select('*');
+    if (eventErr) throw eventErr;
+    console.log('--- EVENTS ---');
+    console.log(JSON.stringify(events, null, 2));
+
     const { data: regs, error: regErr } = await supabase
       .from('registrations')
-      .select('payment_status, reserved_until');
-    
+      .select('id, full_name, event_id, payment_status');
     if (regErr) throw regErr;
 
-    const now = new Date();
-    const paid = regs.filter(r => r.payment_status === 'paid').length;
-    const pending = regs.filter(r => 
-      r.payment_status === 'pending' && 
-      r.reserved_until && 
-      new Date(r.reserved_until) > now
-    ).length;
-
-    console.log('\n--- REAL TIME STATS ---');
-    console.log('Total Paid:', paid);
-    console.log('Total Pending (Active):', pending);
-    console.log('Total Occupied (Paid + Pending):', paid + pending);
+    console.log('\n--- REGISTRATIONS COUNT ---', regs.length);
+    console.log('Sample registrations:', regs.slice(0, 5));
     
   } catch (err) {
     console.error('Error:', err.message);

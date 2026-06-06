@@ -14,7 +14,8 @@ import {
   CircleDollarSign,
   Eye,
   EyeOff,
-  X
+  X,
+  Calendar
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useNavigate } from 'react-router-dom'
@@ -81,7 +82,7 @@ const normalizeName = (name: string): string => {
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<'registrations' | 'coupons' | 'settings'>('registrations')
+  const [activeTab, setActiveTab] = useState<'registrations' | 'coupons' | 'settings' | 'events'>('registrations')
   const [stats, setStats] = useState<Stats | null>(null)
   const [lotPrices, setLotPrices] = useState({ lot1: 110, lot2: 130, lot3: 150 })
   const [registrations, setRegistrations] = useState<Registration[]>([])
@@ -95,6 +96,32 @@ export default function Dashboard() {
   const [errorMsg, setErrorMsg] = useState('')
   const [adminSecret, setAdminSecret] = useState(localStorage.getItem('admin_secret') || '')
   
+  // Múltiplos Eventos
+  const [events, setEvents] = useState<any[]>([])
+  const [selectedEventId, setSelectedEventId] = useState('e0123456-789a-bcde-f012-3456789abcde')
+
+  // Estados para Gerenciamento de Eventos (Sênior)
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false)
+  const [isSubmittingEvent, setIsSubmittingEvent] = useState(false)
+  const [eventError, setEventError] = useState('')
+  const [editingEvent, setEditingEvent] = useState<any>(null)
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    slug: '',
+    description: '',
+    date: '',
+    location: '',
+    image_url: '',
+    capacity: 50,
+    lot1_price: 110,
+    lot2_price: 130,
+    lot3_price: 150,
+    lot1_threshold: 15,
+    lot2_threshold: 30,
+    fee_name: 'Seguro Aventura',
+    fee_price: 10
+  })
+
   const [newCoupon, setNewCoupon] = useState({
     code: '',
     type: 'percentage',
@@ -128,6 +155,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (adminSecret) {
+      // Busca a lista de eventos
+      const fetchEvents = async () => {
+        try {
+          const res = await fetch(`${API_URL}/events`)
+          if (res.ok) {
+            const data = await res.json()
+            setEvents(data || [])
+          }
+        } catch (err) {
+          console.error('Erro ao buscar eventos para o painel:', err)
+        }
+      }
+      fetchEvents()
       fetchData()
     } else {
       const secret = window.prompt('Digite a Chave Mestra de Administração:')
@@ -138,7 +178,7 @@ export default function Dashboard() {
         navigate('/')
       }
     }
-  }, [adminSecret, page])
+  }, [adminSecret, page, selectedEventId])
 
   const fetchData = async () => {
     setLoading(true)
@@ -150,7 +190,7 @@ export default function Dashboard() {
         'Authorization': session ? `Bearer ${session.access_token}` : ''
       }
       
-      const res = await fetch(`${API_URL}/admin/registrations?page=${page}&limit=100`, { headers })
+      const res = await fetch(`${API_URL}/admin/registrations?page=${page}&limit=100&eventId=${selectedEventId}`, { headers })
       if (res.status === 401) throw new Error('Sessão expirada. Faça login novamente.')
       if (res.status === 403) throw new Error('Acesso negado! Chave mestra inválida.')
       
@@ -222,7 +262,7 @@ export default function Dashboard() {
           'x-admin-secret': adminSecret,
           'Authorization': session ? `Bearer ${session.access_token}` : ''
         },
-        body: JSON.stringify(newAthlete)
+        body: JSON.stringify({ ...newAthlete, event_id: selectedEventId })
       })
       const data = await res.json()
       if (res.ok) {
@@ -247,6 +287,89 @@ export default function Dashboard() {
       setManualError(error.message || 'Erro ao conectar ao servidor')
     } finally {
       setIsSubmittingManual(false)
+    }
+  }
+
+  const handleSaveEvent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmittingEvent(true)
+    setEventError('')
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const url = editingEvent 
+        ? `${API_URL}/admin/events/${editingEvent.id}` 
+        : `${API_URL}/admin/events`
+      const method = editingEvent ? 'PUT' : 'POST'
+
+      const payload = {
+        title: eventForm.title,
+        slug: eventForm.slug || eventForm.title.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, ''),
+        description: eventForm.description,
+        date: eventForm.date,
+        location: eventForm.location,
+        image_url: eventForm.image_url,
+        capacity: Number(eventForm.capacity),
+        lot_prices: {
+          lot1: Number(eventForm.lot1_price),
+          lot2: Number(eventForm.lot2_price),
+          lot3: Number(eventForm.lot3_price)
+        },
+        lot_thresholds: {
+          lot1: Number(eventForm.lot1_threshold),
+          lot2: Number(eventForm.lot2_threshold)
+        },
+        fees: [{
+          id: 'insurance',
+          name: eventForm.fee_name,
+          price: Number(eventForm.fee_price)
+        }]
+      }
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': adminSecret,
+          'Authorization': session ? `Bearer ${session.access_token}` : ''
+        },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await res.json()
+      if (res.ok) {
+        setIsEventModalOpen(false)
+        setEditingEvent(null)
+        setEventForm({
+          title: '',
+          slug: '',
+          description: '',
+          date: '',
+          location: '',
+          image_url: '',
+          capacity: 50,
+          lot1_price: 110,
+          lot2_price: 130,
+          lot3_price: 150,
+          lot1_threshold: 15,
+          lot2_threshold: 30,
+          fee_name: 'Seguro Aventura',
+          fee_price: 10
+        })
+        
+        // Recarrega a lista de eventos
+        const evRes = await fetch(`${API_URL}/events`)
+        if (evRes.ok) {
+          const evData = await evRes.json()
+          setEvents(evData || [])
+        }
+      } else {
+        setEventError(data.error || 'Erro ao salvar evento')
+      }
+    } catch (err: any) {
+      setEventError(err.message || 'Erro ao conectar ao servidor')
+    } finally {
+      setIsSubmittingEvent(false)
     }
   }
 
@@ -335,15 +458,17 @@ export default function Dashboard() {
   }
 
   const handleResetEvent = async () => {
-    if (!confirm('ATENCAO: Isso vai apagar TODAS as inscricoes. Tem certeza?')) return
+    if (!confirm('ATENCAO: Isso vai apagar TODAS as inscricoes do evento selecionado. Tem certeza?')) return
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch(`${API_URL}/admin/reset-event`, {
         method: 'POST',
         headers: { 
+          'Content-Type': 'application/json',
           'x-admin-secret': adminSecret,
           'Authorization': session ? `Bearer ${session.access_token}` : ''
-        }
+        },
+        body: JSON.stringify({ eventId: selectedEventId })
       })
       if (res.ok) fetchData()
     } catch (error) {
@@ -359,8 +484,8 @@ export default function Dashboard() {
         'Authorization': session ? `Bearer ${session.access_token}` : ''
       }
       
-      // Busca TODOS os registros sem limite de página para o CSV
-      const res = await fetch(`${API_URL}/admin/registrations?page=1&limit=1000`, { headers })
+      // Busca TODOS os registros sem limite de página para o CSV filtrando por eventId
+      const res = await fetch(`${API_URL}/admin/registrations?page=1&limit=1000&eventId=${selectedEventId}`, { headers })
       const data = await res.json()
       const allRegs: Registration[] = data.registrations || []
 
@@ -482,13 +607,31 @@ export default function Dashboard() {
             </div>
             <div>
               <h1 className="text-sm font-black uppercase tracking-tighter leading-none">Centro de Comando</h1>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Flora Checkout v2.0</p>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Trail & Run Club Checkout v2.0</p>
             </div>
+          </div>
+
+          {/* Seletor de Eventos Sênior 🌟 */}
+          <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 p-1.5 rounded-2xl">
+            <span className="text-[9px] font-black uppercase text-gray-400 px-3 tracking-widest">Evento:</span>
+            <select 
+              value={selectedEventId} 
+              onChange={(e) => {
+                setSelectedEventId(e.target.value)
+                setPage(1)
+              }}
+              className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none border-none pr-4 cursor-pointer"
+            >
+              {events.map(e => (
+                <option key={e.id} value={e.id}>{e.title}</option>
+              ))}
+            </select>
           </div>
 
           <nav className="hidden md:flex bg-gray-100 p-1 rounded-2xl">
             {[
               { id: 'registrations', label: 'Atletas', icon: Users },
+              { id: 'events', label: 'Eventos', icon: Calendar },
               { id: 'coupons', label: 'Cupons', icon: Ticket },
               { id: 'settings', label: 'Config', icon: Settings },
             ].map((tab) => (
@@ -750,6 +893,109 @@ export default function Dashboard() {
               </div>
             </div>
           </>
+        ) : activeTab === 'events' ? (
+          <div className="space-y-8 animate-in fade-in duration-300">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tighter">Gerenciar Eventos</h2>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Crie e configure seus eventos esportivos</p>
+              </div>
+              <button 
+                onClick={() => {
+                  setEditingEvent(null)
+                  setEventForm({
+                    title: '',
+                    slug: '',
+                    description: '',
+                    date: '',
+                    location: '',
+                    image_url: '',
+                    capacity: 50,
+                    lot1_price: 110,
+                    lot2_price: 130,
+                    lot3_price: 150,
+                    lot1_threshold: 15,
+                    lot2_threshold: 30,
+                    fee_name: 'Seguro Aventura',
+                    fee_price: 10
+                  })
+                  setIsEventModalOpen(true)
+                }}
+                className="flex items-center gap-2 px-6 py-4 bg-black hover:bg-black/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm"
+              >
+                <Plus size={16} /> Criar Evento
+              </button>
+            </div>
+
+            <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50/50">
+                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Título / Slug</th>
+                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Data e Local</th>
+                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Capacidade</th>
+                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Lotes</th>
+                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {events.map((e) => (
+                    <tr key={e.id} className="hover:bg-gray-50/30 transition-colors">
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-black uppercase tracking-tight">{e.title}</span>
+                          <span className="text-[10px] text-gray-400 font-medium">/{e.slug}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold text-gray-800">{new Date(e.date).toLocaleDateString('pt-BR')}</span>
+                          <span className="text-[10px] text-gray-400 font-medium">{e.location}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className="text-xs font-black">{e.capacity} atletas</span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex gap-2">
+                          <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-[8px] font-black">1º: R$ {e.lot_prices?.lot1}</span>
+                          <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-[8px] font-black">2º: R$ {e.lot_prices?.lot2}</span>
+                          <span className="bg-purple-50 text-purple-600 px-2 py-0.5 rounded text-[8px] font-black">3º: R$ {e.lot_prices?.lot3}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-center">
+                        <button 
+                          onClick={() => {
+                            setEditingEvent(e)
+                            setEventForm({
+                              title: e.title,
+                              slug: e.slug,
+                              description: e.description || '',
+                              date: e.date ? new Date(e.date).toISOString().slice(0, 16) : '',
+                              location: e.location || '',
+                              image_url: e.image_url || '',
+                              capacity: e.capacity || 50,
+                              lot1_price: e.lot_prices?.lot1 || 110,
+                              lot2_price: e.lot_prices?.lot2 || 130,
+                              lot3_price: e.lot_prices?.lot3 || 150,
+                              lot1_threshold: e.lot_thresholds?.lot1 || 15,
+                              lot2_threshold: e.lot_thresholds?.lot2 || 30,
+                              fee_name: e.fees?.[0]?.name || 'Seguro Aventura',
+                              fee_price: e.fees?.[0]?.price || 10
+                            })
+                            setIsEventModalOpen(true)
+                          }}
+                          className="text-xs text-blue-600 hover:text-blue-800 font-bold uppercase tracking-wider bg-transparent border-none cursor-pointer"
+                        >
+                          Editar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         ) : activeTab === 'coupons' ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* NOVO CUPOM */}
@@ -1050,6 +1296,182 @@ export default function Dashboard() {
               </div>
             </form>
 
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE GERENCIAMENTO DE EVENTO (SÊNIOR UX) */}
+      {isEventModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="w-full max-w-2xl bg-white rounded-[40px] border border-gray-100 shadow-2xl p-8 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-300">
+            
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tighter">
+                  {editingEvent ? 'Editar Evento' : 'Novo Evento'}
+                </h2>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Configure as regras de negócio do evento</p>
+              </div>
+              <button 
+                onClick={() => setIsEventModalOpen(false)}
+                className="p-3 text-gray-400 hover:text-black rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {eventError && (
+              <div className="mb-6 bg-red-50 text-red-500 p-4 rounded-2xl border border-red-100 text-xs font-black uppercase tracking-widest">
+                {eventError}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEvent} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input 
+                  label="Título do Evento" 
+                  value={eventForm.title}
+                  onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                  placeholder="Ex: Trail Run Flona 2026"
+                  required 
+                />
+                <Input 
+                  label="Slug da URL" 
+                  value={eventForm.slug}
+                  onChange={(e) => setEventForm({ ...eventForm, slug: e.target.value })}
+                  placeholder="Ex: trail-run-flona-2026"
+                  required 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Descrição</label>
+                <textarea 
+                  value={eventForm.description}
+                  onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                  placeholder="Descrição do evento que aparece no card e na Landing Page..."
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-xs font-medium outline-none focus:ring-2 ring-black/5 min-h-[100px]"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1 font-bold">Data e Hora</label>
+                  <input 
+                    type="datetime-local" 
+                    value={eventForm.date}
+                    onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-xs font-bold outline-none focus:ring-2 ring-black/5"
+                    required
+                  />
+                </div>
+                <Input 
+                  label="Localização" 
+                  value={eventForm.location}
+                  onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                  placeholder="Ex: FLONA - Brasília"
+                  required 
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input 
+                  label="URL da Imagem Banner" 
+                  value={eventForm.image_url}
+                  onChange={(e) => setEventForm({ ...eventForm, image_url: e.target.value })}
+                  placeholder="Ex: https://dominio.com/banner.png"
+                />
+                <Input 
+                  label="Capacidade Total" 
+                  type="number"
+                  value={eventForm.capacity}
+                  onChange={(e) => setEventForm({ ...eventForm, capacity: Number(e.target.value) })}
+                  placeholder="Ex: 50"
+                  required 
+                />
+              </div>
+
+              <div className="border-t border-gray-100 pt-6">
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Configurações de Lotes</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <Input 
+                    label="Preço Lote 1" 
+                    type="number"
+                    value={eventForm.lot1_price}
+                    onChange={(e) => setEventForm({ ...eventForm, lot1_price: Number(e.target.value) })}
+                    required 
+                  />
+                  <Input 
+                    label="Preço Lote 2" 
+                    type="number"
+                    value={eventForm.lot2_price}
+                    onChange={(e) => setEventForm({ ...eventForm, lot2_price: Number(e.target.value) })}
+                    required 
+                  />
+                  <Input 
+                    label="Preço Lote 3" 
+                    type="number"
+                    value={eventForm.lot3_price}
+                    onChange={(e) => setEventForm({ ...eventForm, lot3_price: Number(e.target.value) })}
+                    required 
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-6 mt-4">
+                  <Input 
+                    label="Virada do Lote 1 (Limite de vagas)" 
+                    type="number"
+                    value={eventForm.lot1_threshold}
+                    onChange={(e) => setEventForm({ ...eventForm, lot1_threshold: Number(e.target.value) })}
+                    required 
+                  />
+                  <Input 
+                    label="Virada do Lote 2 (Limite de vagas)" 
+                    type="number"
+                    value={eventForm.lot2_threshold}
+                    onChange={(e) => setEventForm({ ...eventForm, lot2_threshold: Number(e.target.value) })}
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-6">
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Taxas Obrigatórias</h3>
+                <div className="grid grid-cols-2 gap-6">
+                  <Input 
+                    label="Nome da Taxa" 
+                    value={eventForm.fee_name}
+                    onChange={(e) => setEventForm({ ...eventForm, fee_name: e.target.value })}
+                    placeholder="Ex: Seguro Aventura"
+                    required 
+                  />
+                  <Input 
+                    label="Preço da Taxa (R$)" 
+                    type="number"
+                    value={eventForm.fee_price}
+                    onChange={(e) => setEventForm({ ...eventForm, fee_price: Number(e.target.value) })}
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-6 flex justify-end gap-3">
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  onClick={() => setIsEventModalOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isSubmittingEvent}
+                  className="bg-black text-white hover:bg-black/90 px-6 py-3"
+                >
+                  {isSubmittingEvent ? 'Salvando...' : 'Salvar Evento'}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

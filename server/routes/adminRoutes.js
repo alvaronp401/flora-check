@@ -11,27 +11,36 @@ router.get('/admin/registrations', adminAuth, async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const start = (page - 1) * limit;
   const end = start + limit - 1;
+  const eventId = req.query.eventId || 'e0123456-789a-bcde-f012-3456789abcde';
 
   try {
-    // Busca com paginação e contagem total
+    // Busca com paginação e contagem total filtrado por eventId
     const { data, error, count } = await supabase
       .from('registrations')
       .select('*', { count: 'exact' })
+      .eq('event_id', eventId)
       .order('created_at', { ascending: false })
       .range(start, end);
 
     if (error) throw error;
 
-    // 🛡️ Busca estatísticas REAIS do banco inteiro (não apenas da página atual)
+    // 🛡️ Busca estatísticas REAIS do banco inteiro para o evento específico
     const { data: allStats, error: statsErr } = await supabase
       .from('registrations')
-      .select('payment_status, final_price');
+      .select('payment_status, final_price, reserved_until')
+      .eq('event_id', eventId);
 
     if (statsErr) throw statsErr;
 
-    // Busca configurações para calcular os lotes
-    const { data: settings } = await supabase.from('event_settings').select('*');
-    const thresholds = settings?.find(s => s.key === 'lot_thresholds')?.value || { lot1: 15, lot2: 30 };
+    // Busca configurações do evento para calcular os lotes e a capacidade
+    const { data: event } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .single();
+    
+    const thresholds = event?.lot_thresholds || { lot1: 15, lot2: 30 };
+    const capacity = event?.capacity || 50;
     
     const paid = allStats.filter(r => r.payment_status === 'paid').length;
     const pending = allStats.filter(r => r.payment_status === 'pending').length;
@@ -44,6 +53,7 @@ router.get('/admin/registrations', adminAuth, async (req, res) => {
       total: count,
       paid,
       pending,
+      capacity,
       revenue: allStats
         .filter(r => r.payment_status === 'paid')
         .reduce((acc, curr) => acc + (Number(curr.final_price) || 110), 0),
@@ -61,6 +71,7 @@ router.get('/admin/registrations', adminAuth, async (req, res) => {
       currentPage: page
     });
   } catch (error) {
+    console.error('❌ Erro no admin/registrations:', error);
     res.status(500).json({ error: 'Erro ao listar inscritos.' });
   }
 });
@@ -102,7 +113,7 @@ router.post('/admin/simulate-demand', adminAuth, async (req, res) => {
     const { count } = req.body;
     const dummies = Array.from({ length: count }).map((_, i) => ({
       full_name: `ATLETA TESTE ${i + 1}`,
-      email: `teste${i + 1}@flora.com`,
+      email: `teste${i + 1}@trailrunclub.com.br`,
       cpf: '000.000.000-00',
       phone: '(00) 00000-0000',
       gender: 'Masculino',
@@ -119,16 +130,23 @@ router.post('/admin/simulate-demand', adminAuth, async (req, res) => {
   }
 });
 
-// 💣 POST /admin/reset-event — Apaga TODAS as inscrições (apenas para testes)
+// 💣 POST /admin/reset-event — Apaga as inscrições de um evento específico ou todas para testes
 router.post('/admin/reset-event', adminAuth, async (req, res) => {
   try {
-    const { error } = await supabase
-      .from('registrations')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000');
+    const { eventId } = req.body;
+    let query = supabase.from('registrations').delete();
+    
+    if (eventId) {
+      query = query.eq('event_id', eventId);
+    } else {
+      query = query.neq('id', '00000000-0000-0000-0000-000000000000');
+    }
+    
+    const { error } = await query;
     if (error) throw error;
-    res.json({ message: 'Evento resetado! Todas as inscrições foram apagadas.' });
+    res.json({ message: 'Evento resetado! As inscrições correspondentes foram apagadas.' });
   } catch (error) {
+    console.error('❌ Erro ao resetar evento:', error);
     res.status(500).json({ error: 'Erro ao resetar evento.' });
   }
 });
@@ -165,8 +183,11 @@ router.post('/admin/registrations', adminAuth, async (req, res) => {
       medication, 
       gender, 
       shirt_size, 
-      payment_status 
+      payment_status,
+      event_id
     } = req.body;
+
+    const targetEventId = event_id || 'e0123456-789a-bcde-f012-3456789abcde';
 
     // Regra Sênior 🧠: Se o atleta for cadastrado como 'paid' (pago),
     // estendemos a reserva dele até 2099 para nunca expirar.
@@ -189,6 +210,7 @@ router.post('/admin/registrations', adminAuth, async (req, res) => {
         shirt_size,
         payment_status,
         reserved_until,
+        event_id: targetEventId,
         final_price: payment_status === 'paid' ? 110.00 : null
       }])
       .select()
@@ -200,6 +222,99 @@ router.post('/admin/registrations', adminAuth, async (req, res) => {
   } catch (error) {
     console.error('❌ Erro no cadastro manual de atleta:', error);
     res.status(500).json({ error: 'Erro interno ao cadastrar atleta manualmente.' });
+  }
+});
+
+// ➕ POST /admin/events — Cria um novo evento (Sênior)
+router.post('/admin/events', adminAuth, async (req, res) => {
+  try {
+    const { 
+      title, 
+      slug, 
+      description, 
+      date, 
+      location, 
+      image_url, 
+      capacity, 
+      lot_prices, 
+      lot_thresholds, 
+      fees 
+    } = req.body;
+
+    const cleanSlug = slug.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');
+
+    const { data, error } = await supabase
+      .from('events')
+      .insert([{
+        title,
+        slug: cleanSlug,
+        description,
+        date: new Date(date).toISOString(),
+        location,
+        image_url: image_url || '',
+        capacity: Number(capacity) || 50,
+        lot_prices: lot_prices || { lot1: 110, lot2: 130, lot3: 150 },
+        lot_thresholds: lot_thresholds || { lot1: 15, lot2: 30 },
+        fees: fees || [{ id: 'insurance', name: 'Seguro Aventura', price: 10.00 }],
+        is_active: true
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ message: 'Evento criado com sucesso!', event: data });
+  } catch (error) {
+    console.error('❌ Erro ao criar evento:', error);
+    res.status(500).json({ error: 'Erro interno ao criar evento.' });
+  }
+});
+
+// 🔄 PUT /admin/events/:id — Atualiza configurações de um evento (Sênior)
+router.put('/admin/events/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { 
+      title, 
+      slug, 
+      description, 
+      date, 
+      location, 
+      image_url, 
+      capacity, 
+      lot_prices, 
+      lot_thresholds, 
+      fees,
+      is_active
+    } = req.body;
+
+    const updateData = {};
+    if (title !== undefined) updateData.title = title;
+    if (slug !== undefined) updateData.slug = slug.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');
+    if (description !== undefined) updateData.description = description;
+    if (date !== undefined) updateData.date = new Date(date).toISOString();
+    if (location !== undefined) updateData.location = location;
+    if (image_url !== undefined) updateData.image_url = image_url;
+    if (capacity !== undefined) updateData.capacity = Number(capacity);
+    if (lot_prices !== undefined) updateData.lot_prices = lot_prices;
+    if (lot_thresholds !== undefined) updateData.lot_thresholds = lot_thresholds;
+    if (fees !== undefined) updateData.fees = fees;
+    if (is_active !== undefined) updateData.is_active = is_active;
+    updateData.updated_at = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from('events')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ message: 'Evento atualizado com sucesso!', event: data });
+  } catch (error) {
+    console.error('❌ Erro ao atualizar evento:', error);
+    res.status(500).json({ error: 'Erro interno ao atualizar evento.' });
   }
 });
 
