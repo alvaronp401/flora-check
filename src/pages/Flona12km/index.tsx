@@ -172,6 +172,9 @@ const Flona12km: React.FC = () => {
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<IForm>({
     resolver: yupResolver(schema) as any,
     mode: 'onChange',
+    defaultValues: {
+      shirtSize: 'N/A'
+    }
   })
 
   const onSubmit = async (data: IForm) => {
@@ -837,19 +840,7 @@ const Flona12km: React.FC = () => {
                 {errors.bloodType && <p className="mt-1 text-[10px] text-red-400 font-bold uppercase">{errors.bloodType.message}</p>}
               </div>
 
-              {/* Camiseta */}
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1.5">Tamanho da Camiseta</label>
-                <div className="grid grid-cols-5 gap-2">
-                  {['PP','P','M','G','GG'].map(size => (
-                    <button key={size} type="button" onClick={() => setValue('shirtSize', size)}
-                      className={`h-10 rounded-xl border text-[10px] font-black uppercase transition-all ${
-                        watch('shirtSize') === size ? 'border-green-500 bg-green-500/15 text-green-400' : 'border-white/10 bg-white/5 text-white/30 hover:border-white/20'
-                      }`}>{size}</button>
-                  ))}
-                </div>
-                {errors.shirtSize && <p className="mt-1 text-[10px] text-red-400 font-bold uppercase">{errors.shirtSize.message}</p>}
-              </div>
+
 
               {/* Alergias / Medicamentos */}
               <div>
