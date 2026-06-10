@@ -25,8 +25,9 @@ export default function AdminLogin() {
     e.preventDefault()
     setLoading(true)
     setLoginError('')
+    const normalizedEmail = email.trim().toLowerCase()
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
       if (error) throw error
       if (data.user) {
         // 🔐 Solicita a Chave Mestra para comunicação com o Backend
