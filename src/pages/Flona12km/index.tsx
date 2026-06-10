@@ -770,29 +770,29 @@ const Flona12km: React.FC = () => {
 
               {/* Nome */}
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1.5">Nome Completo</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1.5">Nome Completo</label>
                 <input {...register('fullName')} placeholder="Como no documento"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" />
+                  className="w-full bg-white/8 border border-white/20 rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/45 outline-none focus:border-green-400 focus:bg-white/10 transition-all duration-300 shadow-inner" />
                 {errors.fullName && <p className="mt-1 text-[10px] text-red-400 font-bold uppercase">{errors.fullName.message}</p>}
               </div>
 
               {/* CPF + Gênero */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1.5">CPF</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1.5">CPF</label>
                   <input {...register('cpf')} placeholder="000.000.000-00" onChange={e => setValue('cpf', maskCPF(e.target.value))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" />
+                    className="w-full bg-white/8 border border-white/20 rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/45 outline-none focus:border-green-400 focus:bg-white/10 transition-all duration-300 shadow-inner" />
                   {errors.cpf && <p className="mt-1 text-[10px] text-red-400 font-bold uppercase">{errors.cpf.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1.5">Gênero</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1.5">Gênero</label>
                   <div className="grid grid-cols-2 gap-2">
                     {['M', 'F'].map((g, idx) => (
                       <button key={g} type="button" onClick={() => setValue('gender', idx === 0 ? 'Masculino' : 'Feminino')}
                         className={`h-12.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
                           watch('gender') === (idx === 0 ? 'Masculino' : 'Feminino')
-                            ? 'border-green-500 bg-green-500/15 text-green-400'
-                            : 'border-white/10 bg-white/5 text-white/30 hover:border-white/20'
+                            ? 'border-green-400 bg-green-400/20 text-green-300 font-bold'
+                            : 'border-white/20 bg-white/8 text-white/50 hover:border-white/30'
                         }`}>
                         {g === 'M' ? 'Masc' : 'Fem'}
                       </button>
@@ -804,9 +804,9 @@ const Flona12km: React.FC = () => {
 
               {/* E-mail */}
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1.5">E-mail</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1.5">E-mail</label>
                 <input {...register('email')} type="email" placeholder="seu@email.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" />
+                  className="w-full bg-white/8 border border-white/20 rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/45 outline-none focus:border-green-400 focus:bg-white/10 transition-all duration-300 shadow-inner" />
                 {errors.email && <p className="mt-1 text-[10px] text-red-400 font-bold uppercase">{errors.email.message}</p>}
               </div>
 
@@ -817,10 +817,10 @@ const Flona12km: React.FC = () => {
                   { label: 'Emergência',  field: 'emergencyPhone', placeholder: '(00) 00000-0000' },
                 ].map(({ label, field, placeholder }) => (
                   <div key={field}>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1.5">{label}</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1.5">{label}</label>
                     <input {...register(field as any)} placeholder={placeholder}
                       onChange={e => setValue(field as any, maskPhone(e.target.value))}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" />
+                      className="w-full bg-white/8 border border-white/20 rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/45 outline-none focus:border-green-400 focus:bg-white/10 transition-all duration-300 shadow-inner" />
                     {(errors as any)[field] && <p className="mt-1 text-[10px] text-red-400 font-bold uppercase">{(errors as any)[field]?.message}</p>}
                   </div>
                 ))}
@@ -828,12 +828,12 @@ const Flona12km: React.FC = () => {
 
               {/* Tipo Sanguíneo */}
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1.5">Tipo Sanguíneo</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1.5">Tipo Sanguíneo</label>
                 <div className="grid grid-cols-4 gap-2">
                   {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(t => (
                     <button key={t} type="button" onClick={() => setValue('bloodType', t)}
                       className={`h-10 rounded-xl border text-[10px] font-black uppercase transition-all ${
-                        watch('bloodType') === t ? 'border-green-500 bg-green-500/15 text-green-400' : 'border-white/10 bg-white/5 text-white/30 hover:border-white/20'
+                        watch('bloodType') === t ? 'border-green-400 bg-green-400/20 text-green-300 font-bold' : 'border-white/20 bg-white/8 text-white/50 hover:border-white/30'
                       }`}>{t}</button>
                   ))}
                 </div>
@@ -844,9 +844,9 @@ const Flona12km: React.FC = () => {
 
               {/* Alergias / Medicamentos */}
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/35 mb-1.5">Alergias ou Medicamentos de Uso Contínuo (Opcional)</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1.5">Alergias ou Medicamentos de Uso Contínuo (Opcional)</label>
                 <input {...register('medication')} placeholder="Ex: Alergia a picada de abelha, uso de insulina, nenhum..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" />
+                  className="w-full bg-white/8 border border-white/20 rounded-xl px-4 py-3.5 text-sm text-white placeholder-white/45 outline-none focus:border-green-400 focus:bg-white/10 transition-all duration-300 shadow-inner" />
                 {errors.medication && <p className="mt-1 text-[10px] text-red-400 font-bold uppercase">{errors.medication.message}</p>}
               </div>
 
