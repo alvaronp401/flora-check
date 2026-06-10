@@ -15,7 +15,7 @@ async function finalizeRegistration(registrationId, amount, paymentId = 'manual_
 
   // 🛡️ ÚLTIMA DEFESA: Verifica se o evento lotou enquanto o cara pagava
   const { getEventStatus } = require('./eventService');
-  const status = await getEventStatus(reg.event_id);
+  const status = await getEventStatus(reg.event_id, registrationId);
   
   // Se já tem atingiu a capacidade do evento, bloqueia novos
   if (status.occupied >= status.capacity) {

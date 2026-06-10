@@ -7,6 +7,7 @@ import AdminDashboard from '../pages/Admin/Dashboard'
 import AdminLogin from '../pages/Admin/Login'
 import { Terms } from '../pages/Legal/Terms'
 import { Privacy } from '../pages/Legal/Privacy'
+import Flona12km from '../pages/Flona12km'
 
 /**
  * Maestro das Rotas 🎼
@@ -27,6 +28,12 @@ export const router = createBrowserRouter([
   {
     path: '/checkout',
     element: <Checkout />,
+  },
+  {
+    // 🌿 Funil/Checkout da Trilha Flona 12km
+    // URL limpa e direta para divulgar no Instagram/WhatsApp
+    path: '/flona-12km',
+    element: <Flona12km />,
   },
   {
     path: '/success',

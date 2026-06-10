@@ -211,7 +211,14 @@ router.post('/admin/registrations', adminAuth, async (req, res) => {
         payment_status,
         reserved_until,
         event_id: targetEventId,
-        final_price: payment_status === 'paid' ? 110.00 : null
+      // ─────────────────────────────────────────────────────────────────────
+      // 🛡️ CORREÇÃO DE BUG SÊNIOR: final_price era hardcoded como 110.00
+      // para TODOS os eventos. Agora salvamos null quando status=paid manual
+      // e o valor real só entra via /create-preference (dinâmico por lote).
+      // Para cadastros manuais paid, o admin já sabe o valor — salvamos null
+      // para não poluir o relatório de receita com valores incorretos.
+      // ─────────────────────────────────────────────────────────────────────
+      final_price: null
       }])
       .select()
       .single();

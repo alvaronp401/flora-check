@@ -7,6 +7,19 @@ const eventSchedules: Record<string, { time: string; activity: string }[]> = {
     { time: '09:40', activity: 'Sorteios e ativações de parceiros' },
     { time: '10:00', activity: 'Encerramento' },
   ],
+  // ─────────────────────────────────────────────────────────────────────────
+  // 📌 CONCEITO: Adicionamos o cronograma da Flona 12km aqui.
+  // A chave do objeto ('flona-12km-04-06') deve ser EXATAMENTE igual ao slug
+  // do evento no banco de dados. Se mudar o slug lá, muda aqui também.
+  // ─────────────────────────────────────────────────────────────────────────
+  'flona-12km-04-06': [
+    { time: '07:30', activity: 'Concentração — Mesas atrás do Quiosque dos Mapas' },
+    { time: '07:45', activity: 'Dinâmicas de aquecimento com Alessandra' },
+    { time: '08:00', activity: 'Início da trilha 12km (ida e volta)' },
+    { time: 'No caminho', activity: '1ª Parada: Córrego Geladeira (banho + lanche)' },
+    { time: 'Retorno', activity: '2ª Parada: Pinheiral (descanso)' },
+    { time: 'Final', activity: 'Encerramento e fotos com os atletas Founders 🌱' },
+  ],
   'toneis-13-06': [
     { time: 'A definir', activity: 'Check-in e briefing dos atletas' },
     { time: 'A definir', activity: 'Aquecimento coletivo nos Tonéis' },
