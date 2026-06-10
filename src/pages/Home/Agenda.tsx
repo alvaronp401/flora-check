@@ -76,6 +76,13 @@ export const Agenda: React.FC = () => {
         return res.json()
       })
       .then((data: EventCard[]) => {
+        // Regra Sênior 🧠: Buscamos o status de vagas real (do banco) para o evento da Flona 
+        // e aplicamos no card estático antes de filtrá-lo.
+        const realEvent = data.find(e => e.slug === 'flona-12km')
+        if (realEvent) {
+          FLONA_12KM_STATIC.is_sold_out = realEvent.is_sold_out || false
+        }
+
         // Regra Sênior 🧠: Ocultamos a versão dinâmica 'flona-12km' da agenda pública, 
         // mas mantemos ela ativa no banco de dados para poder gerenciar as inscrições e lotes no Painel.
         const filtered = data.filter(e => e.slug !== 'flona-12km')
