@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, Calendar, MapPin, Trophy, ArrowRight } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
+const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Gzq8Rom45jm9rsFTf81jM5?s=sh&p=i&ilr=1&amv=2'
+
 export default function Success() {
   const [searchParams] = useSearchParams()
   const registrationId = searchParams.get('registrationId')
@@ -109,12 +111,12 @@ export default function Success() {
 
         <div className="space-y-4">
           <a 
-            href="https://chat.whatsapp.com/Ja0XMR9VVo66gZSyUkWDaL" 
+            href={WHATSAPP_GROUP_URL} 
             target="_blank" 
             rel="noreferrer"
             className="flex items-center justify-center gap-3 w-full bg-[#25D366] text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-green-500/20 hover:scale-[1.02] transition-transform"
           >
-            Entrar no Grupo de Atletas <ArrowRight size={18} />
+            Entrar no Grupo Oficial <ArrowRight size={18} />
           </a>
           
           <Link 
