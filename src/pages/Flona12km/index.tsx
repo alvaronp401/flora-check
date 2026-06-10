@@ -25,6 +25,8 @@ import aleImg     from '../../assets/colaborador3.png'   // Alessandra na trilha
 import waImg1     from '../../assets/trilha_flona_1.jpeg'
 import waImg2     from '../../assets/trilha_flona_2.jpeg'
 import waImg3     from '../../assets/trilha_flona_3.jpeg'
+import waImg4     from '../../assets/trilha_flona_4.jpeg'
+import waImg5     from '../../assets/trilha_flona_5.jpeg'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTE DO EVENTO
@@ -86,7 +88,7 @@ const TESTIMONIALS = [
   }
 ]
 
-const GALLERY = [waImg1, waImg2, waImg3]
+const GALLERY = [waImg1, waImg2, waImg3, waImg4, waImg5]
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCHEMA DE VALIDAÇÃO
