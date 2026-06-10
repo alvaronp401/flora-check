@@ -8,6 +8,76 @@ const { sensitiveLimiter } = require('../middleware/rateLimit');
 
 const router = Router();
 
+// POST /registrations
+// Cria uma inscricao pendente pelo backend para evitar falhas de RLS/anon key no browser.
+router.post('/registrations',
+  sensitiveLimiter,
+  [
+    body('eventId').isUUID().withMessage('Evento invalido.'),
+    body('fullName').isLength({ min: 3 }).withMessage('Nome muito curto.'),
+    body('cpf').isLength({ min: 11 }).withMessage('CPF invalido.'),
+    body('email').isEmail().withMessage('E-mail invalido.'),
+    body('phone').isLength({ min: 10 }).withMessage('Telefone invalido.'),
+    body('emergencyPhone').isLength({ min: 10 }).withMessage('Telefone de emergencia invalido.'),
+    body('bloodType').notEmpty().withMessage('Tipo sanguineo obrigatorio.'),
+    body('gender').notEmpty().withMessage('Genero obrigatorio.'),
+    body('shirtSize').notEmpty().withMessage('Tamanho da camiseta obrigatorio.'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const {
+        eventId,
+        fullName,
+        cpf,
+        email,
+        phone,
+        emergencyPhone,
+        bloodType,
+        gender,
+        shirtSize,
+        medication
+      } = req.body;
+
+      const status = await getEventStatus(eventId);
+      if (status.is_sold_out) {
+        return res.status(400).json({ error: 'Desculpe, as vagas acabaram de esgotar!' });
+      }
+
+      const reservedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from('registrations')
+        .insert([{
+          full_name: fullName,
+          cpf,
+          email,
+          phone,
+          emergency_phone: emergencyPhone,
+          blood_type: bloodType,
+          medication: medication || '',
+          gender,
+          shirt_size: shirtSize,
+          payment_status: 'pending',
+          event_id: eventId,
+          reserved_until: reservedUntil
+        }])
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      res.json({ registrationId: data.id, expires_at: reservedUntil });
+    } catch (error) {
+      console.error('ERRO AO RESERVAR INSCRICAO:', error);
+      res.status(500).json({ error: 'Nao conseguimos reservar sua vaga. Tente novamente.' });
+    }
+  }
+);
+
 // 🚀 POST /create-preference
 // Valida estoque, aplica cupom, reserva vaga e gera link de pagamento
 router.post('/create-preference', 

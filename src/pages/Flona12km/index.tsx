@@ -18,7 +18,6 @@ import {
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { supabase } from '../../lib/supabase'
 import { API_URL } from '../../config/api'
 
 // Fotos reais do Trail & Run Club
@@ -180,18 +179,30 @@ const Flona12km: React.FC = () => {
     if (!eventStatus || eventStatus.available <= 0) { setSubmitError('Todas as vagas foram preenchidas.'); return }
     if (!FLONA_12KM_EVENT_ID) { setSubmitError('O evento está sendo configurado. Tente em instantes.'); return }
     try {
-      const { data: reg, error: dbErr } = await supabase.from('registrations').insert([{
-        full_name: data.fullName, cpf: data.cpf, email: data.email,
-        phone: data.phone, emergency_phone: data.emergencyPhone,
-        blood_type: data.bloodType, gender: data.gender, shirt_size: data.shirtSize,
-        medication: data.medication || '', payment_status: 'pending', event_id: FLONA_12KM_EVENT_ID,
-        reserved_until: new Date(Date.now() + 15 * 60_000).toISOString(),
-      }]).select().single()
-      if (dbErr) throw new Error('Não conseguimos reservar sua vaga. Tente novamente.')
+      const reservationRes = await fetch(`${API_URL}/registrations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: FLONA_12KM_EVENT_ID,
+          fullName: data.fullName,
+          cpf: data.cpf,
+          email: data.email,
+          phone: data.phone,
+          emergencyPhone: data.emergencyPhone,
+          bloodType: data.bloodType,
+          gender: data.gender,
+          shirtSize: data.shirtSize,
+          medication: data.medication || '',
+        }),
+      })
+      const reservation = await reservationRes.json()
+      if (!reservationRes.ok) {
+        throw new Error(reservation.error || 'Não conseguimos reservar sua vaga. Tente novamente.')
+      }
 
       const mpRes = await fetch(`${API_URL}/create-preference`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ registrationId: reg.id, email: data.email, fullName: data.fullName }),
+        body: JSON.stringify({ registrationId: reservation.registrationId, email: data.email, fullName: data.fullName }),
       })
       if (!mpRes.ok) { const e = await mpRes.json(); throw new Error(e.error || 'Erro no pagamento.') }
       const pref = await mpRes.json()
