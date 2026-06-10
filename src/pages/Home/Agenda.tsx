@@ -76,6 +76,10 @@ export const Agenda: React.FC = () => {
         return res.json()
       })
       .then((data: EventCard[]) => {
+        // Regra Sênior 🧠: Ocultamos a versão dinâmica 'flona-12km' da agenda pública, 
+        // mas mantemos ela ativa no banco de dados para poder gerenciar as inscrições e lotes no Painel.
+        const filtered = data.filter(e => e.slug !== 'flona-12km')
+
         // ─────────────────────────────────────────────────────────────────
         // 📌 CONCEITO: sort() com comparadores customizados
         // sort recebe uma função (a, b) => number:
@@ -83,7 +87,7 @@ export const Agenda: React.FC = () => {
         //   retorna  1  → 'b' vem ANTES de 'a'
         //   retorna  0  → ordem não muda
         // ─────────────────────────────────────────────────────────────────
-        const sorted = [...data].sort((a, b) => {
+        const sorted = [...filtered].sort((a, b) => {
           // Founder Edition sempre em primeiro lugar
           if (a.slug === 'trail-run-flona-2026') return -1
           if (b.slug === 'trail-run-flona-2026') return 1
