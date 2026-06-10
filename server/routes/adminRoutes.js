@@ -79,13 +79,32 @@ router.get('/admin/registrations', adminAuth, async (req, res) => {
 // ✅ POST /admin/confirm-payment/:id — Confirma pagamento manualmente (dispara fluxo completo)
 router.post('/admin/confirm-payment/:id', adminAuth, async (req, res) => {
   try {
-    const success = await finalizeRegistration(req.params.id, 110.00, 'admin_button');
+    // 1. Busca a inscrição para saber qual é o event_id
+    const { data: reg, error: regError } = await supabase
+      .from('registrations')
+      .select('event_id')
+      .eq('id', req.params.id)
+      .single();
+
+    if (regError || !reg) {
+      return res.status(404).json({ error: 'Inscrição não encontrada.' });
+    }
+
+    // 2. Consulta o preço atual do lote e taxas configuradas para o evento
+    const { getEventStatus } = require('../services/eventService');
+    const status = await getEventStatus(reg.event_id);
+    const lotPrice = status.currentLot.price;
+    const fees = status.fees.reduce((acc, curr) => acc + (Number(curr.price) || 0), 0);
+    const finalPrice = lotPrice + fees;
+
+    const success = await finalizeRegistration(req.params.id, finalPrice, 'admin_button');
     if (success) {
-      res.json({ message: 'Pagamento confirmado! Fluxo de e-mail e nota fiscal disparados.' });
+      res.json({ message: `Pagamento confirmado com o valor de R$ ${finalPrice}! Fluxo de e-mail e nota fiscal disparados.` });
     } else {
       res.status(400).json({ error: 'Inscrição já está paga ou não foi encontrada.' });
     }
   } catch (error) {
+    console.error('❌ Erro ao confirmar pagamento manual:', error);
     res.status(500).json({ error: 'Erro ao confirmar pagamento.' });
   }
 });
