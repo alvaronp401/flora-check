@@ -17,7 +17,7 @@ const FLONA_12KM_STATIC = {
   slug: 'flona-12km-04-06',        // slug único — usado nas rotas
   title: 'Flona 12 km',            // Título exibido no card
   description: 'Trilha 12km ida e volta na Floresta Nacional de Brasília. Nível fácil a médio. Toda plana, com parada no Córrego Geladeira e no Pinheiral.',
-  date: '2026-06-04T07:30:00',     // 04/06 — Concentração 07:30
+  date: '2026-06-14T07:30:00',     // 14/06 — Concentração 07:30
   location: 'Floresta Nacional de Brasília',
   image_url: '',                    // sem imagem da API — usamos o flonaCover
   capacity: 20,                     // 20 participantes (Atletas Founders)

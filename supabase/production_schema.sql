@@ -108,7 +108,7 @@ insert into public.events (
   'flona-12km',
   'Trilha Flona 12km',
   'Trilha guiada de 12km na Flona Brasilia com parada no Corrego Geladeira e Pinheiral.',
-  '2026-06-04 07:30:00-03',
+  '2026-06-14 07:30:00-03',
   'FLONA Brasilia',
   20,
   '{"lot1":30,"lot2":30,"lot3":30}'::jsonb,

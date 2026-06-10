@@ -290,7 +290,7 @@ const Flona12km: React.FC = () => {
                 <line x1="8"  y1="2" x2="8"  y2="6" strokeWidth="2"/>
                 <line x1="3"  y1="10" x2="21" y2="10" strokeWidth="2"/>
               </svg>
-              Domingo, 04 de Junho · 07h30
+              Domingo, 14 de Junho · 07h30
             </div>
 
             <h1 className="text-[3.5rem] md:text-[5rem] font-black leading-[0.9] tracking-tight uppercase mb-5">
@@ -736,7 +736,7 @@ const Flona12km: React.FC = () => {
               <p className="text-4xl font-black text-white mt-1">R$ {price}<span className="text-lg text-white/30">,00</span></p>
             </div>
             <div className="text-right text-[11px] text-white/35 font-medium leading-relaxed">
-              04 Jun · Domingo<br />07h30 · FLONA Brasília
+              14 Jun · Domingo<br />07h30 · FLONA Brasília
             </div>
           </div>
 

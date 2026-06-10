@@ -10,7 +10,7 @@
 // Se o estilo do badge mudar, mudamos AQUI e reflete em TODA a aplicação.
 //
 // COMO USAR:
-//   <SectionBadge icon={Leaf}>04 de Junho · Domingo</SectionBadge>
+//   <SectionBadge icon={Leaf}>14 de Junho · Domingo</SectionBadge>
 //   <SectionBadge icon={Star} variant="gold">1º Lote · Sorteio</SectionBadge>
 // ─────────────────────────────────────────────────────────────────────────────
 import type { LucideIcon } from 'lucide-react'
