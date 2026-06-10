@@ -501,11 +501,8 @@ const Flona12km: React.FC = () => {
           </div>
 
           {/* Timeline vertical */}
-          <div className="relative">
-            {/* Linha vertical */}
-            <div className="absolute left-5 top-0 bottom-0 w-px bg-white/8" />
-
-            <div className="space-y-2">
+          <div>
+            <div>
               {[
                 { time: '07h30', title: 'Concentração',       desc: 'Mesas de madeira atrás do Quiosque dos Mapas. Check-in e boas-vindas.' },
                 { time: '07h45', title: 'Aquecimento',        desc: 'Dinâmicas de aquecimento com a condutora Alessandra antes da partida.' },
@@ -513,11 +510,15 @@ const Flona12km: React.FC = () => {
                 { time: 'Parada 1', title: 'Córrego Geladeira', desc: 'Ponto de banho, descanso e lanche no meio do caminho.' },
                 { time: 'Parada 2', title: 'Pinheiral',       desc: 'Segunda parada, vista do pinheiral antes do retorno.' },
                 { time: 'Retorno', title: 'Encerramento',     desc: 'Confraternização, fotos e sorteio da esmaltação entre os Founders.' },
-              ].map((item, i) => (
-                <div key={i} className="relative flex gap-6 pl-14 pb-6">
-                  {/* Ponto na linha */}
-                  <div className="absolute left-3 top-1 w-4 h-4 rounded-full bg-green-400 border-2 border-green-500/50" />
-                  <div className="flex-1 bg-white/4 border border-white/8 rounded-2xl px-5 py-4 hover:border-green-500/20 transition-colors">
+              ].map((item, i, items) => (
+                <div key={i} className="grid grid-cols-[28px_1fr] gap-6">
+                  <div className="relative flex justify-center">
+                    {i > 0 && <div className="absolute top-0 bottom-1/2 w-px bg-white/8" />}
+                    {i < items.length - 1 && <div className="absolute top-1/2 bottom-0 w-px bg-white/8" />}
+                    <div className="relative z-10 mt-8 w-4 h-4 rounded-full bg-green-400 border-2 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.35)]" />
+                  </div>
+
+                  <div className="mb-6 flex-1 bg-white/4 border border-white/8 rounded-2xl px-5 py-4 hover:border-green-500/20 transition-colors">
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-xs font-black text-white mb-0.5">{item.title}</p>
