@@ -9,6 +9,7 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loginError, setLoginError] = useState('')
   const navigate = useNavigate()
 
   const handleLogoClick = () => {
@@ -23,6 +24,7 @@ export default function AdminLogin() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setLoginError('')
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
@@ -39,6 +41,7 @@ export default function AdminLogin() {
     } catch (error: any) {
       // Erro genérico para não dar pistas
       console.error('Falha na autenticação administrativa.')
+      setLoginError('E-mail ou senha inválidos no Supabase Auth.')
     } finally {
       setLoading(false)
     }
@@ -87,6 +90,13 @@ export default function AdminLogin() {
               className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 outline-none focus:border-black transition-all text-sm font-medium"
               required
             />
+            {loginError && (
+              <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-left">
+                <p className="text-[10px] font-black uppercase tracking-widest text-red-500">
+                  {loginError}
+                </p>
+              </div>
+            )}
             <button 
               type="submit"
               disabled={loading}
