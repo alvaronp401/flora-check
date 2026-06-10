@@ -134,6 +134,11 @@ const Flona12km: React.FC = () => {
     is_sold_out: boolean; capacity: number
   } | null>(null)
 
+  // ── Scroll para o topo ao carregar a página ──
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   // ── Busca status de vagas ──
   useEffect(() => {
     const isReal = Boolean(FLONA_12KM_EVENT_ID)
