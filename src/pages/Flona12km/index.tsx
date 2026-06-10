@@ -448,9 +448,22 @@ const Flona12km: React.FC = () => {
       <section className="relative z-10 bg-linear-to-r from-[#0B1A0B] via-green-950/30 to-[#0B1A0B] border-y border-white/6 py-16">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div className="relative rounded-2xl overflow-hidden h-90">
-              <img src={aleImg} alt="Alessandra conduzindo a trilha" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-linear-to-r from-transparent to-[#0B1A0B]/70" />
+            <div>
+              <div className="relative rounded-2xl overflow-hidden h-90">
+                <img src={aleImg} alt="Alessandra conduzindo a trilha" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-linear-to-r from-transparent to-[#0B1A0B]/70" />
+              </div>
+              <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-white/35">
+                Site desenvolvido por:{' '}
+                <a
+                  href="https://www.instagram.com/eualvaronoronha"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-green-400 hover:text-green-300 transition-colors"
+                >
+                  @eualvaronoronha
+                </a>
+              </p>
             </div>
             <div>
               <p className="text-[11px] font-bold uppercase tracking-widest text-green-400 mb-3">Quem vai te conduzir</p>
