@@ -113,6 +113,7 @@ export default function Dashboard() {
     location: '',
     image_url: '',
     capacity: 50,
+    num_lots: 3,
     lot1_price: 110,
     lot2_price: 130,
     lot3_price: 150,
@@ -302,6 +303,30 @@ export default function Dashboard() {
         : `${API_URL}/admin/events`
       const method = editingEvent ? 'PUT' : 'POST'
 
+      const numLots = eventForm.num_lots
+      const capacity = Number(eventForm.capacity)
+      
+      let lot_prices = {
+        lot1: Number(eventForm.lot1_price),
+        lot2: Number(eventForm.lot2_price),
+        lot3: Number(eventForm.lot3_price)
+      }
+      
+      let lot_thresholds = {
+        lot1: Number(eventForm.lot1_threshold),
+        lot2: Number(eventForm.lot2_threshold)
+      }
+
+      if (numLots === 1) {
+        lot_prices.lot2 = lot_prices.lot1
+        lot_prices.lot3 = lot_prices.lot1
+        lot_thresholds.lot1 = capacity
+        lot_thresholds.lot2 = capacity
+      } else if (numLots === 2) {
+        lot_prices.lot3 = lot_prices.lot2
+        lot_thresholds.lot2 = capacity
+      }
+
       const payload = {
         title: eventForm.title,
         slug: eventForm.slug || eventForm.title.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, ''),
@@ -309,16 +334,9 @@ export default function Dashboard() {
         date: eventForm.date,
         location: eventForm.location,
         image_url: eventForm.image_url,
-        capacity: Number(eventForm.capacity),
-        lot_prices: {
-          lot1: Number(eventForm.lot1_price),
-          lot2: Number(eventForm.lot2_price),
-          lot3: Number(eventForm.lot3_price)
-        },
-        lot_thresholds: {
-          lot1: Number(eventForm.lot1_threshold),
-          lot2: Number(eventForm.lot2_threshold)
-        },
+        capacity: capacity,
+        lot_prices,
+        lot_thresholds,
         fees: [{
           id: 'insurance',
           name: eventForm.fee_name,
@@ -348,6 +366,7 @@ export default function Dashboard() {
           location: '',
           image_url: '',
           capacity: 50,
+          num_lots: 3,
           lot1_price: 110,
           lot2_price: 130,
           lot3_price: 150,
@@ -911,6 +930,7 @@ export default function Dashboard() {
                     location: '',
                     image_url: '',
                     capacity: 50,
+                    num_lots: 3,
                     lot1_price: 110,
                     lot2_price: 130,
                     lot3_price: 150,
@@ -975,6 +995,7 @@ export default function Dashboard() {
                               location: e.location || '',
                               image_url: e.image_url || '',
                               capacity: e.capacity || 50,
+                              num_lots: e.lot_thresholds?.lot2 === e.capacity ? (e.lot_thresholds?.lot1 === e.capacity ? 1 : 2) : 3,
                               lot1_price: e.lot_prices?.lot1 || 110,
                               lot2_price: e.lot_prices?.lot2 || 130,
                               lot3_price: e.lot_prices?.lot3 || 150,
@@ -1394,7 +1415,23 @@ export default function Dashboard() {
 
               <div className="border-t border-gray-100 pt-6">
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Configurações de Lotes</h3>
-                <div className="grid grid-cols-3 gap-4">
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Número de Lotes</label>
+                    <select
+                      value={eventForm.num_lots}
+                      onChange={(e) => setEventForm({ ...eventForm, num_lots: Number(e.target.value) })}
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-xs font-bold text-gray-800 outline-none focus:border-blue-500/40 focus:bg-white transition-all shadow-sm"
+                    >
+                      <option value={1}>1 Lote (Preço Único)</option>
+                      <option value={2}>2 Lotes</option>
+                      <option value={3}>3 Lotes</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className={`grid gap-4 ${eventForm.num_lots === 1 ? 'grid-cols-1' : eventForm.num_lots === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
                   <Input 
                     label="Preço Lote 1" 
                     type="number"
@@ -1402,37 +1439,48 @@ export default function Dashboard() {
                     onChange={(e) => setEventForm({ ...eventForm, lot1_price: Number(e.target.value) })}
                     required 
                   />
-                  <Input 
-                    label="Preço Lote 2" 
-                    type="number"
-                    value={eventForm.lot2_price}
-                    onChange={(e) => setEventForm({ ...eventForm, lot2_price: Number(e.target.value) })}
-                    required 
-                  />
-                  <Input 
-                    label="Preço Lote 3" 
-                    type="number"
-                    value={eventForm.lot3_price}
-                    onChange={(e) => setEventForm({ ...eventForm, lot3_price: Number(e.target.value) })}
-                    required 
-                  />
+                  {eventForm.num_lots >= 2 && (
+                    <Input 
+                      label="Preço Lote 2" 
+                      type="number"
+                      value={eventForm.lot2_price}
+                      onChange={(e) => setEventForm({ ...eventForm, lot2_price: Number(e.target.value) })}
+                      required 
+                    />
+                  )}
+                  {eventForm.num_lots === 3 && (
+                    <Input 
+                      label="Preço Lote 3" 
+                      type="number"
+                      value={eventForm.lot3_price}
+                      onChange={(e) => setEventForm({ ...eventForm, lot3_price: Number(e.target.value) })}
+                      required 
+                    />
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-6 mt-4">
-                  <Input 
-                    label="Virada do Lote 1 (Limite de vagas)" 
-                    type="number"
-                    value={eventForm.lot1_threshold}
-                    onChange={(e) => setEventForm({ ...eventForm, lot1_threshold: Number(e.target.value) })}
-                    required 
-                  />
-                  <Input 
-                    label="Virada do Lote 2 (Limite de vagas)" 
-                    type="number"
-                    value={eventForm.lot2_threshold}
-                    onChange={(e) => setEventForm({ ...eventForm, lot2_threshold: Number(e.target.value) })}
-                    required 
-                  />
-                </div>
+
+                {eventForm.num_lots >= 2 && (
+                  <div className={`grid gap-6 mt-4 ${eventForm.num_lots === 2 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                    <Input 
+                      label="Virada do Lote 1 (Limite de vagas acumulado)" 
+                      type="number"
+                      value={eventForm.lot1_threshold}
+                      onChange={(e) => setEventForm({ ...eventForm, lot1_threshold: Number(e.target.value) })}
+                      placeholder="Ex: 10"
+                      required 
+                    />
+                    {eventForm.num_lots === 3 && (
+                      <Input 
+                        label="Virada do Lote 2 (Limite de vagas acumulado)" 
+                        type="number"
+                        value={eventForm.lot2_threshold}
+                        onChange={(e) => setEventForm({ ...eventForm, lot2_threshold: Number(e.target.value) })}
+                        placeholder="Ex: 20"
+                        required 
+                      />
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="border-t border-gray-100 pt-6">
