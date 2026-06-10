@@ -122,8 +122,8 @@ export const Agenda: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#110A06] text-white selection:bg-[#D4B996] selection:text-[#110A06] relative overflow-hidden font-sans">
       {/* Elementos visuais de fundo para sensação premium */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-[#D4B996]/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#E5CBA7]/5 blur-[100px] pointer-events-none" />
+      <div className="absolute top-[-20%] left-[-10%] w-150 h-150 rounded-full bg-[#D4B996]/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-125 h-125 rounded-full bg-[#E5CBA7]/5 blur-[100px] pointer-events-none" />
 
       {/* Header */}
       <header className="border-b border-white/5 backdrop-blur-md bg-[#110A06]/80 sticky top-0 z-50">
@@ -207,7 +207,7 @@ export const Agenda: React.FC = () => {
               return (
                 <div
                   key={event.id}
-                  className="group relative backdrop-blur-md bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden flex flex-col justify-between hover:border-[#D4B996]/30 hover:bg-white/[0.07] transition-all duration-500 hover:translate-y-[-4px] shadow-2xl"
+                  className="group relative backdrop-blur-md bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden flex flex-col justify-between hover:border-[#D4B996]/30 hover:bg-white/[0.07] transition-all duration-500 hover:-translate-y-1 shadow-2xl"
                 >
                   <div>
                     {/* ── Foto de capa: apenas nos cards grandes ── */}
@@ -224,7 +224,7 @@ export const Agenda: React.FC = () => {
                             (e.target as HTMLImageElement).src = flonaCover
                           }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#110A06] via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-[#110A06] via-transparent to-transparent" />
                         <div className="absolute top-4 left-4">
                           {event.is_sold_out ? (
                             <span className="px-3 py-1 bg-red-950/80 backdrop-blur-md border border-red-500/30 rounded-full text-[10px] font-bold tracking-widest uppercase text-red-400">
@@ -262,7 +262,7 @@ export const Agenda: React.FC = () => {
                       {/* Metadados */}
                       <div className="space-y-3.5 border-t border-white/5 pt-6">
                         <div className="flex items-center gap-3 text-gray-400 text-xs">
-                          <Calendar className="w-4 h-4 text-[#D4B996] flex-shrink-0" />
+                          <Calendar className="w-4 h-4 text-[#D4B996] shrink-0" />
                           <span className="font-semibold">
                             {isLargeCard
                               ? formatDate(event.date)
@@ -270,13 +270,13 @@ export const Agenda: React.FC = () => {
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-gray-400 text-xs">
-                          <MapPin className="w-4 h-4 text-[#D4B996] flex-shrink-0" />
+                          <MapPin className="w-4 h-4 text-[#D4B996] shrink-0" />
                           <span className="font-semibold line-clamp-1">
                             {isLargeCard ? event.location : 'Local a definir'}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-gray-400 text-xs">
-                          <Users className="w-4 h-4 text-[#D4B996] flex-shrink-0" />
+                          <Users className="w-4 h-4 text-[#D4B996] shrink-0" />
                           <span className="font-semibold">
                             Capacidade: {isLargeCard ? `${event.capacity} atletas` : 'A definir'}
                           </span>

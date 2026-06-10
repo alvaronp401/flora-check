@@ -77,8 +77,8 @@ const Home: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#110A06] text-white selection:bg-[#D4B996] selection:text-[#110A06] relative overflow-hidden font-sans flex flex-col justify-between">
         {/* Elementos visuais de fundo */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-[#D4B996]/5 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#E5CBA7]/5 blur-[100px] pointer-events-none" />
+        <div className="absolute top-[-20%] left-[-10%] w-150 h-150 rounded-full bg-[#D4B996]/5 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-125 h-125 rounded-full bg-[#E5CBA7]/5 blur-[100px] pointer-events-none" />
 
         {/* Header */}
         <header className="border-b border-white/5 backdrop-blur-md bg-[#110A06]/80 sticky top-0 z-50">

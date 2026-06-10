@@ -621,7 +621,7 @@ const Flona12km: React.FC = () => {
             <div className="flex gap-4 w-max animate-marquee-left">
               {/* Renderiza as primeiras 6 opiniões */}
               {TESTIMONIALS.slice(0, 6).map((t, i) => (
-                <div key={`r1-${i}`} className="w-87.5 h-[276px] shrink-0 flex flex-col bg-white/4 border border-white/8 rounded-2xl p-6 hover:border-white/15 transition-all hover:bg-white/6 duration-300">
+                <div key={`r1-${i}`} className="w-87.5 h-69 shrink-0 flex flex-col bg-white/4 border border-white/8 rounded-2xl p-6 hover:border-white/15 transition-all hover:bg-white/6 duration-300">
                   <div className="flex gap-0.5 mb-4">
                     {[1,2,3,4,5].map(s => <Star key={s} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />)}
                   </div>
@@ -639,7 +639,7 @@ const Flona12km: React.FC = () => {
               ))}
               {/* Duplicação exata para efeito infinito contínuo */}
               {TESTIMONIALS.slice(0, 6).map((t, i) => (
-                <div key={`r1-dup-${i}`} className="w-87.5 h-[276px] shrink-0 flex flex-col bg-white/4 border border-white/8 rounded-2xl p-6 hover:border-white/15 transition-all hover:bg-white/6 duration-300">
+                <div key={`r1-dup-${i}`} className="w-87.5 h-69 shrink-0 flex flex-col bg-white/4 border border-white/8 rounded-2xl p-6 hover:border-white/15 transition-all hover:bg-white/6 duration-300">
                   <div className="flex gap-0.5 mb-4">
                     {[1,2,3,4,5].map(s => <Star key={s} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />)}
                   </div>
@@ -663,7 +663,7 @@ const Flona12km: React.FC = () => {
             <div className="flex gap-4 w-max animate-marquee-right">
               {/* Renderiza as últimas 6 opiniões */}
               {TESTIMONIALS.slice(6, 12).map((t, i) => (
-                <div key={`r2-${i}`} className="w-87.5 h-[276px] shrink-0 flex flex-col bg-white/4 border border-white/8 rounded-2xl p-6 hover:border-white/15 transition-all hover:bg-white/6 duration-300">
+                <div key={`r2-${i}`} className="w-87.5 h-69 shrink-0 flex flex-col bg-white/4 border border-white/8 rounded-2xl p-6 hover:border-white/15 transition-all hover:bg-white/6 duration-300">
                   <div className="flex gap-0.5 mb-4">
                     {[1,2,3,4,5].map(s => <Star key={s} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />)}
                   </div>
@@ -681,7 +681,7 @@ const Flona12km: React.FC = () => {
               ))}
               {/* Duplicação exata para efeito infinito contínuo */}
               {TESTIMONIALS.slice(6, 12).map((t, i) => (
-                <div key={`r2-dup-${i}`} className="w-87.5 h-[276px] shrink-0 flex flex-col bg-white/4 border border-white/8 rounded-2xl p-6 hover:border-white/15 transition-all hover:bg-white/6 duration-300">
+                <div key={`r2-dup-${i}`} className="w-87.5 h-69 shrink-0 flex flex-col bg-white/4 border border-white/8 rounded-2xl p-6 hover:border-white/15 transition-all hover:bg-white/6 duration-300">
                   <div className="flex gap-0.5 mb-4">
                     {[1,2,3,4,5].map(s => <Star key={s} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />)}
                   </div>
