@@ -6,7 +6,6 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Ticket, CheckCircle2, AlertCircle, X, ShieldAlert } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
-import { supabase } from '../../lib/supabase'
 import { API_URL } from '../../config/api'
 import { ScheduleCard } from './ScheduleCard'
 
@@ -220,30 +219,28 @@ export default function Checkout() {
     }
 
     try {
-      // 1. Cria a inscrição no Supabase vinculada ao event_id
-      const { data: registration, error: dbError } = await supabase
-        .from('registrations')
-        .insert([{
-          full_name: data.fullName,
+      // 1. Cria a inscricao pelo backend com service role, evitando RLS/anon key no browser.
+      const reservationResponse = await fetch(`${API_URL}/registrations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId,
+          fullName: data.fullName,
           cpf: data.cpf,
           email: data.email,
           phone: data.phone,
-          emergency_phone: data.emergencyPhone,
-          blood_type: data.bloodType,
-          medication: data.medication,
+          emergencyPhone: data.emergencyPhone,
+          bloodType: data.bloodType,
           gender: data.gender,
-          shirt_size: data.shirtSize,
-          payment_status: 'pending',
-          coupon_code: appliedCoupon?.code || null,
-          event_id: eventId,
-          reserved_until: new Date(Date.now() + 15 * 60 * 1000).toISOString()
-        }])
-        .select()
-        .single()
+          shirtSize: data.shirtSize,
+          medication: data.medication || '',
+          couponCode: appliedCoupon?.code || null,
+        })
+      })
 
-      if (dbError) {
-        console.error('❌ Erro no Banco de Dados:', dbError);
-        throw new Error('Não conseguimos reservar sua vaga. Verifique seus dados e tente novamente.');
+      const registration = await reservationResponse.json()
+      if (!reservationResponse.ok) {
+        throw new Error(registration.error || 'Nao conseguimos reservar sua vaga. Verifique seus dados e tente novamente.');
       }
 
       // 2. Cria preferência no Mercado Pago
@@ -251,7 +248,7 @@ export default function Checkout() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          registrationId: registration.id,
+          registrationId: registration.registrationId,
           email: data.email,
           fullName: data.fullName,
           couponCode: appliedCoupon?.code

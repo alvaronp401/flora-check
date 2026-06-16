@@ -26,11 +26,11 @@ const eventSchedules: Record<string, { time: string; event: string }[]> = {
     { time: 'A definir', event: 'Encerramento e feedback do treinador' }
   ],
   'alongamento-corrida-eixao-sul': [
-    { time: 'A definir', event: 'Ponto de encontro no Eixão Sul' },
-    { time: 'A definir', event: 'Alongamento com Jonathas Treinador' },
-    { time: 'A definir', event: 'Corrida/Caminhada de 5km' },
-    { time: 'A definir', event: 'Café da manhã coletivo & Socialização com seu Pet' },
-    { time: 'A definir', event: 'Encerramento da atividade' }
+    { time: '08:00', event: 'Encontro no Eixão Sul' },
+    { time: '08:10', event: 'Alongamento em grupo com Prof. Jonathas Armiliato' },
+    { time: '08:30', event: 'Corrida/caminhada em grupo' },
+    { time: '09:20', event: 'Café coletivo: leve sua canga' },
+    { time: '10:00', event: 'Encerramento e fotos' }
   ],
   'poco-azul-28-06': [
     { time: 'A definir', event: 'Encontro na entrada do Poço Azul & Check-in' },
@@ -43,7 +43,7 @@ const eventSchedules: Record<string, { time: string; event: string }[]> = {
 
 const instructors = [
   { 
-    name: 'Jonathas Treinador', 
+    name: 'Jonathas Armiliato', 
     handle: '@jonathastreinador',
     image: johnImg
   },
@@ -61,6 +61,9 @@ interface ScheduleProps {
 
 export const Schedule: React.FC<ScheduleProps> = ({ eventId, slug }) => {
   const currentSchedule = eventSchedules[slug] || eventSchedules['trail-run-flona-2026']
+  const currentInstructors = slug === 'alongamento-corrida-eixao-sul'
+    ? instructors.slice(0, 1)
+    : instructors
 
   return (
     <section className="bg-slate-50 py-24 md:py-32">
@@ -92,7 +95,7 @@ export const Schedule: React.FC<ScheduleProps> = ({ eventId, slug }) => {
             <span>instrutores</span>
           </h3>
           <div className="flex justify-center gap-12 md:gap-32 w-full">
-            {instructors.map((instr, i) => (
+            {currentInstructors.map((instr, i) => (
               <a 
                 key={i}
                 href={`https://instagram.com/${instr.handle.replace('@', '')}`}

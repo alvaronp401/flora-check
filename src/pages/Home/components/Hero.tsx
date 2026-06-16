@@ -10,8 +10,9 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ event, eventStatus }) => {
   const isFlona = event?.slug === 'trail-run-flona-2026'
+  const isEixao = event?.slug === 'alongamento-corrida-eixao-sul'
   const defaultCover = eventArt
-  const badgeText = isFlona ? 'Founder Edition Brasília 2026' : `${event?.title || 'Experiência'} - Edição 2026`
+  const badgeText = isFlona ? 'Founder Edition Brasília 2026' : isEixao ? 'Aulão no Eixão Sul' : `${event?.title || 'Experiência'} - Edição 2026`
 
   const formatDateOnly = (dateString: string) => {
     if (!dateString) return ''
@@ -21,8 +22,13 @@ export const Hero: React.FC<HeroProps> = ({ event, eventStatus }) => {
     return `${day} de ${month}`
   }
 
-  const displayDate = isFlona ? '06 de JUNHO' : `${formatDateOnly(event?.date)} - HORÁRIO A DEFINIR`
-  const displayLocation = isFlona ? 'FLONA - BRASÍLIA' : 'LOCAL A DEFINIR'
+  const displayDate = isFlona ? '06 de JUNHO' : isEixao ? '21 de JUNHO - 08H' : `${formatDateOnly(event?.date)} - HORÁRIO A DEFINIR`
+  const displayLocation = isFlona ? 'FLONA - BRASÍLIA' : isEixao ? 'EIXÃO SUL - BRASÍLIA' : 'LOCAL A DEFINIR'
+  const heroTitle = isEixao ? ['AULÃO', 'EIXÃO'] : ['TRAIL', 'RUN']
+  const heroAccent = isEixao ? 'Sul' : 'Club'
+  const eventDescription = isEixao
+    ? 'Alongamento + corrida/caminhada em grupo às 8h com Prof. Jonathas Armiliato. Leve sua canga e vamos tomar café juntos depois do movimento.'
+    : event?.description || 'Explore seus limites em uma jornada única de superação, saúde e conexão com a natureza.'
 
   return (
     <header className="relative py-12 md:py-24 px-6 overflow-hidden bg-[#4B2C20]">
@@ -50,17 +56,17 @@ export const Hero: React.FC<HeroProps> = ({ event, eventStatus }) => {
             {/* Stack Centralizada (O coração do título) */}
             <div className="flex flex-col items-center md:items-start -skew-x-6 relative">
               <span className="text-6xl md:text-9xl font-black text-white leading-[0.8] tracking-tighter uppercase drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
-                TRAIL
+                {heroTitle[0]}
               </span>
               <span className="text-6xl md:text-9xl font-black text-white leading-[0.8] tracking-tighter uppercase drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
-                RUN
+                {heroTitle[1]}
               </span>
               <span className="font-serif italic text-4xl md:text-7xl text-[#D4B996] leading-none mt-4 md:mt-6 drop-shadow-2xl">
-                Club
+                {heroAccent}
               </span>
 
               {/* Ampersand na Direita */}
-              <div className="absolute left-[105%] top-0 h-[65%] flex items-center">
+              <div className={`absolute left-[105%] top-0 h-[65%] items-center ${isEixao ? 'hidden' : 'flex'}`}>
                 <span className="text-[#D4B996] font-serif italic text-5xl md:text-[8rem] leading-none drop-shadow-2xl">
                   &
                 </span>
@@ -71,7 +77,7 @@ export const Hero: React.FC<HeroProps> = ({ event, eventStatus }) => {
           </div>
           
           <p className="text-base md:text-xl text-gray-300 mb-6 max-w-md leading-relaxed font-medium">
-            {event?.description || 'Explore seus limites em uma jornada única de superação, saúde e conexão com a natureza.'}
+            {eventDescription}
           </p>
           
           <div className="flex flex-col items-center md:items-start gap-4 mb-12 w-full">
@@ -129,4 +135,3 @@ export const Hero: React.FC<HeroProps> = ({ event, eventStatus }) => {
     </header>
   )
 }
-

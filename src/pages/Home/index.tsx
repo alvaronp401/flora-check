@@ -7,6 +7,20 @@ import { Kit } from './components/Kit'
 import { FooterCTA } from './components/FooterCTA'
 import { API_URL } from '../../config/api'
 
+const FULL_PAGE_EVENT_SLUGS = new Set([
+  'trail-run-flona-2026',
+  'alongamento-corrida-eixao-sul',
+])
+
+const EVENT_OVERRIDES: Record<string, any> = {
+  'alongamento-corrida-eixao-sul': {
+    title: 'Aulão no Eixão Sul',
+    description: 'Alongamento + corrida/caminhada em grupo às 8h com Prof. Jonathas Armiliato. Leve sua canga e vamos tomar café juntos depois do movimento.',
+    date: '2026-06-21T08:00:00',
+    location: 'Eixão Sul',
+  },
+}
+
 const Home: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
@@ -28,7 +42,8 @@ const Home: React.FC = () => {
         if (!eventRes.ok) {
           throw new Error('Evento não encontrado')
         }
-        const eventData = await eventRes.json()
+        const rawEventData = await eventRes.json()
+        const eventData = { ...rawEventData, ...EVENT_OVERRIDES[rawEventData.slug] }
         setEvent(eventData)
 
         // 2. Busca o status das vagas do evento
@@ -73,7 +88,7 @@ const Home: React.FC = () => {
   }
 
   // 🚀 TELA 'EM BREVE NOVIDADES' PARA NOVOS EVENTOS (JUNHO)
-  if (event.slug !== 'trail-run-flona-2026') {
+  if (!FULL_PAGE_EVENT_SLUGS.has(event.slug)) {
     return (
       <div className="min-h-screen bg-[#110A06] text-white selection:bg-[#D4B996] selection:text-[#110A06] relative overflow-hidden font-sans flex flex-col justify-between">
         {/* Elementos visuais de fundo */}
@@ -152,4 +167,3 @@ const Home: React.FC = () => {
 }
 
 export default Home
-

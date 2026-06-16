@@ -38,6 +38,19 @@ const CLOSED_HOME_EVENT_SLUGS = new Set([
   'flona-12km-04-06',
 ])
 
+const OPEN_HOME_EVENT_SLUGS = new Set([
+  'alongamento-corrida-eixao-sul',
+])
+
+const EVENT_COPY_OVERRIDES: Record<string, Partial<EventCard>> = {
+  'alongamento-corrida-eixao-sul': {
+    title: 'Aulão no Eixão Sul',
+    description: 'Alongamento + corrida/caminhada em grupo. Leve sua canga e vamos tomar café juntos.',
+    date: '2026-06-21T08:00:00',
+    location: 'Eixão Sul',
+  },
+}
+
 // Tipo estendido com o campo isStatic opcional
 type EventCard = {
   id: string
@@ -59,7 +72,7 @@ const getSimplifiedDescription = (slug: string, defaultDesc: string) => {
   const simplified: Record<string, string> = {
     'toneis-13-06': 'Treino prático com check-in e check-out programados na natureza.',
     'treino-jonathas-aguas-claras': 'Treino técnico orientado com foco em subidas, descidas e postura.',
-    'alongamento-corrida-eixao-sul': 'Alongamento dinâmico seguido de corrida leve de 5km no Eixão Sul.',
+    'alongamento-corrida-eixao-sul': 'Alongamento + corrida/caminhada em grupo. Leve sua canga e vamos tomar café juntos.',
     'poco-azul-28-06': 'Treino técnico de trail running com subidas no cenário do Poço Azul.'
   }
   return simplified[slug] || defaultDesc
@@ -114,7 +127,9 @@ export const Agenda: React.FC = () => {
 
         // Regra Sênior 🧠: Ocultamos a versão dinâmica 'flona-12km' da agenda pública, 
         // mas mantemos ela ativa no banco de dados para poder gerenciar as inscrições e lotes no Painel.
-        const filtered = data.filter(e => e.slug !== 'flona-12km' && !HIDDEN_HOME_EVENT_SLUGS.has(e.slug))
+        const filtered = data
+          .filter(e => e.slug !== 'flona-12km' && !HIDDEN_HOME_EVENT_SLUGS.has(e.slug))
+          .map(e => ({ ...e, ...EVENT_COPY_OVERRIDES[e.slug] }))
 
         // ─────────────────────────────────────────────────────────────────
         // 📌 CONCEITO: sort() com comparadores customizados
@@ -224,6 +239,7 @@ export const Agenda: React.FC = () => {
               // recebe imagem grande. No futuro, adicionar mais slugs aqui.
               // ─────────────────────────────────────────────────────────────
               const isLargeCard = event.slug === 'trail-run-flona-2026' || event.slug === 'flona-12km-04-06'
+              const isOpenHomeEvent = event.isStatic || OPEN_HOME_EVENT_SLUGS.has(event.slug)
 
               // ─────────────────────────────────────────────────────────────
               // 📌 CONCEITO: "Computed title"
@@ -288,8 +304,12 @@ export const Agenda: React.FC = () => {
                     <div className="p-8">
                       {/* Badge de status para treinos pequenos (sem imagem) */}
                       {!isLargeCard && (
-                        <span className="inline-block px-3 py-1 bg-[#D4B996]/10 border border-[#D4B996]/20 rounded-full text-[10px] font-bold tracking-widest uppercase text-[#D4B996] mb-4">
-                          Inscrições em breve
+                        <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4 ${
+                          isOpenHomeEvent
+                            ? 'bg-green-900/50 border border-green-500/20 text-green-400'
+                            : 'bg-[#D4B996]/10 border border-[#D4B996]/20 text-[#D4B996]'
+                        }`}>
+                          {isOpenHomeEvent ? 'Inscrições abertas' : 'Inscrições em breve'}
                         </span>
                       )}
                       <h3 className="text-2xl font-black mb-3 group-hover:text-[#D4B996] transition-all tracking-tight leading-tight">
@@ -304,7 +324,7 @@ export const Agenda: React.FC = () => {
                         <div className="flex items-center gap-3 text-gray-400 text-xs">
                           <Calendar className="w-4 h-4 text-[#D4B996] shrink-0" />
                           <span className="font-semibold">
-                            {isLargeCard
+                            {isOpenHomeEvent
                               ? formatDate(event.date)
                               : `${new Date(event.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })} - Horário a definir`}
                           </span>
@@ -312,13 +332,13 @@ export const Agenda: React.FC = () => {
                         <div className="flex items-center gap-3 text-gray-400 text-xs">
                           <MapPin className="w-4 h-4 text-[#D4B996] shrink-0" />
                           <span className="font-semibold line-clamp-1">
-                            {isLargeCard ? event.location : 'Local a definir'}
+                            {isOpenHomeEvent ? event.location : 'Local a definir'}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-gray-400 text-xs">
                           <Users className="w-4 h-4 text-[#D4B996] shrink-0" />
                           <span className="font-semibold">
-                            Capacidade: {isLargeCard ? `${event.capacity} atletas` : 'A definir'}
+                            Capacidade: {isOpenHomeEvent ? `${event.capacity} atletas` : 'A definir'}
                           </span>
                         </div>
                       </div>
@@ -331,7 +351,7 @@ export const Agenda: React.FC = () => {
                       to={cardLink}
                       className="w-full h-14 rounded-2xl bg-[#D4B996]/10 text-[#D4B996] hover:bg-[#D4B996] hover:text-[#110A06] font-bold flex items-center justify-center gap-2 transition-all duration-300 group/btn border border-[#D4B996]/20 hover:border-transparent text-sm tracking-wider uppercase"
                     >
-                      {event.is_sold_out ? 'Inscrições Encerradas' : event.isStatic ? 'Garantir Vaga' : 'Ver Detalhes'}
+                      {event.is_sold_out ? 'Inscrições Encerradas' : isOpenHomeEvent ? 'Garantir Vaga' : 'Ver Detalhes'}
                       <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                     </Link>
                   </div>
@@ -441,7 +461,7 @@ export const Agenda: React.FC = () => {
             <div className="flex justify-center gap-12 md:gap-32 w-full">
               {[
                 { 
-                  name: 'Jonathas Treinador', 
+                  name: 'Jonathas Armiliato', 
                   handle: '@jonathastreinador',
                   image: johnImg
                 },

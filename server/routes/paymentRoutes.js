@@ -22,6 +22,7 @@ router.post('/registrations',
     body('bloodType').notEmpty().withMessage('Tipo sanguineo obrigatorio.'),
     body('gender').notEmpty().withMessage('Genero obrigatorio.'),
     body('shirtSize').notEmpty().withMessage('Tamanho da camiseta obrigatorio.'),
+    body('couponCode').optional({ nullable: true }).isLength({ max: 64 }).withMessage('Cupom invalido.'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -40,7 +41,8 @@ router.post('/registrations',
         bloodType,
         gender,
         shirtSize,
-        medication
+        medication,
+        couponCode
       } = req.body;
 
       const status = await getEventStatus(eventId);
@@ -62,6 +64,7 @@ router.post('/registrations',
           gender,
           shirt_size: shirtSize,
           payment_status: 'pending',
+          coupon_code: couponCode || null,
           event_id: eventId,
           reserved_until: reservedUntil
         }])

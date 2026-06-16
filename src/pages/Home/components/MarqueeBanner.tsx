@@ -8,6 +8,7 @@ interface MarqueeBannerProps {
 export const MarqueeBanner: React.FC<MarqueeBannerProps> = ({ eventStatus }) => {
   const lotName = eventStatus?.currentLot?.name || 'PRIMEIRO'
   const isSoldOut = eventStatus?.is_sold_out || eventStatus?.available <= 0
+  const isEixao = eventStatus?.slug === 'alongamento-corrida-eixao-sul'
 
   const items = (
     <div className="flex items-center">
@@ -17,6 +18,8 @@ export const MarqueeBanner: React.FC<MarqueeBannerProps> = ({ eventStatus }) => 
             <Flame size={14} className="text-orange-500 fill-orange-500" />
             {isSoldOut ? (
               'VAGAS COMPLETAMENTE ESGOTADAS - ACOMPANHE A AGENDA DE PRÓXIMOS EVENTOS'
+            ) : isEixao ? (
+              'AULÃO NO EIXÃO SUL - 08H - ALONGAMENTO + CORRIDA/CAMINHADA - LEVE SUA CANGA -'
             ) : (
               `QUASE ESGOTANDO - GARANTA SUA VAGA NO ${lotName} LOTE -`
             )}
