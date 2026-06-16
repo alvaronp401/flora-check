@@ -29,6 +29,11 @@ const FLONA_12KM_STATIC = {
   isStatic: true,                  // flag para distinguir de eventos da API
 }
 
+const HIDDEN_HOME_EVENT_SLUGS = new Set([
+  'toneis-13-06',
+  'treino-jonathas-aguas-claras',
+])
+
 // Tipo estendido com o campo isStatic opcional
 type EventCard = {
   id: string
@@ -108,7 +113,7 @@ export const Agenda: React.FC = () => {
 
         // Regra Sênior 🧠: Ocultamos a versão dinâmica 'flona-12km' da agenda pública, 
         // mas mantemos ela ativa no banco de dados para poder gerenciar as inscrições e lotes no Painel.
-        const filtered = data.filter(e => e.slug !== 'flona-12km')
+        const filtered = data.filter(e => e.slug !== 'flona-12km' && !HIDDEN_HOME_EVENT_SLUGS.has(e.slug))
 
         // ─────────────────────────────────────────────────────────────────
         // 📌 CONCEITO: sort() com comparadores customizados
