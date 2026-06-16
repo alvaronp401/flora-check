@@ -18,9 +18,9 @@ insert into public.events (
   'Alongamento + corrida/caminhada em grupo às 8h com Prof. Jonathas Armiliato. Leve sua canga e vamos tomar café juntos.',
   '2026-06-21 08:00:00-03',
   'Eixão Sul',
-  50,
-  '{"lot1":30,"lot2":30,"lot3":30}'::jsonb,
-  '{"lot1":50,"lot2":50}'::jsonb,
+  30,
+  '{"lot1":30,"lot2":35}'::jsonb,
+  '{"lot1":15,"lot2":30}'::jsonb,
   '[]'::jsonb,
   true
 ) on conflict (slug) do update set

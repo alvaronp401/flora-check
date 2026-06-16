@@ -15,10 +15,8 @@ export const ConfirmedAthletesCarousel: React.FC<ConfirmedAthletesCarouselProps>
     fetch(`${API_URL}/confirmed-athletes?eventId=${eventId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setAthletes(data);
-        } else {
-          setAthletes(['Em Breve', 'Garanta sua vaga']);
         }
       })
       .catch((err) => console.error('Erro ao buscar atletas:', err));

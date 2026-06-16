@@ -25,10 +25,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={`
-              w-full rounded-xl border-gray-100 shadow-sm p-4 bg-gray-50 
-              focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none
+              w-full border-2 rounded-xl shadow-sm p-4 bg-gray-50 
+              focus:ring-4 focus:ring-[#1A0F0A]/5 focus:border-[#1A0F0A] outline-none
               transition-all placeholder:text-gray-300
-              ${error ? 'border-red-500 bg-red-50' : 'border-gray-200'}
+              ${error ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}
               ${className}
             `}
             {...props}

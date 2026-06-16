@@ -17,7 +17,7 @@ const FULL_PAGE_EVENT_SLUGS = new Set([
 const EVENT_OVERRIDES: Record<string, Partial<EventData>> = {
   'alongamento-corrida-eixao-sul': {
     title: 'Aulão no Eixão Sul',
-    description: 'Alongamento + corrida/caminhada em grupo às 8h com Prof. Jonathas Armiliato. Leve sua canga e vamos tomar café juntos depois do movimento.',
+    description: 'Alongamento + corrida/caminhada em grupo às 8h com Prof. Jonathas Armiliato. Leve sua canga e vamos tomar café juntos depois do movimento. ⚠️ Observação: Teremos sorteio de brindes dos nossos parceiros oficiais!',
     date: '2026-06-21T08:00:00',
     location: 'Eixão Sul',
   },

@@ -1,5 +1,6 @@
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Calendar, MapPin } from 'lucide-react'
+import { Calendar, MapPin, ArrowLeft } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import eventArt from '../../../assets/artenova.png'
 import type { EventData, EventStatus } from '../types'
@@ -44,6 +45,59 @@ const eventPresentation = {
   },
 }
 
+const HeroCarousel = ({ isEixao, defaultCover }: { isEixao: boolean, defaultCover: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  // As 5 fotos do evento no carrossel
+  const images = isEixao ? [
+    '/image1.png',
+    '/image2.png',
+    '/image3.png',
+    '/image4.png',
+    '/image5.png'
+  ] : [defaultCover]
+
+  useEffect(() => {
+    if (images.length <= 1) return
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [images.length])
+
+  return (
+    <div className={`relative overflow-hidden rounded-[40px] border-4 transition-transform duration-500 group-hover:scale-[1.02] aspect-[4/5] w-full ${isEixao ? 'border-sky-300/20 shadow-2xl shadow-blue-950/40' : 'border-white/10'}`}>
+      {images.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          alt="Evento Trail Run"
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${isEixao ? 'saturate-110 contrast-105' : ''} ${i === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+          loading="eager"
+          decoding="async"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = defaultCover
+          }}
+        />
+      ))}
+
+      {/* Indicadores do Carrossel (só aparecem se tiver mais de 1 foto) */}
+      {images.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+          {images.map((_, i) => (
+            <button 
+              key={i} 
+              onClick={() => setCurrentIndex(i)}
+              className={`h-2 rounded-full transition-all duration-300 ${i === currentIndex ? 'w-6 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'}`}
+              aria-label={`Ir para a imagem ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export const Hero: React.FC<HeroProps> = ({ event, eventStatus }) => {
   const isFlona = event?.slug === 'trail-run-flona-2026'
   const isEixao = event?.slug === 'alongamento-corrida-eixao-sul'
@@ -80,6 +134,20 @@ export const Hero: React.FC<HeroProps> = ({ event, eventStatus }) => {
 
       <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-2">
         <div className="flex flex-col items-center text-center md:items-start md:text-left">
+          
+          {/* Botão Voltar Estático e Alinhado à Esquerda */}
+          <Link 
+            to="/" 
+            className="self-start group flex items-center gap-3 mb-8 text-white/60 hover:text-white transition-colors"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 group-hover:bg-white/20 transition-colors">
+              <ArrowLeft size={14} />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+              Agenda
+            </span>
+          </Link>
+
           <div className="group relative mb-8 inline-block cursor-default px-12 py-6">
             <div className="absolute inset-0 scale-105 -rotate-2 rounded-[100%] border-2 border-white/40 animate-pulse" />
             <div className="absolute inset-0 scale-115 rotate-3 rounded-[100%] border-2 border-white/10" />
@@ -151,18 +219,7 @@ export const Hero: React.FC<HeroProps> = ({ event, eventStatus }) => {
 
         <div className="group relative -mt-16 md:mt-0">
           <div className="absolute inset-0 scale-75 rounded-full bg-white/10 blur-3xl animate-pulse" />
-          <div className={`relative overflow-hidden rounded-[40px] border-4 transition-transform duration-500 group-hover:scale-[1.02] ${isEixao ? 'border-sky-300/20 shadow-2xl shadow-blue-950/40' : 'border-white/10'}`}>
-            <img
-              src={event?.image_url || defaultCover}
-              alt={event?.title || 'Trail & Run Club Evento'}
-              className={`h-auto w-full ${isEixao ? 'saturate-110 contrast-105' : ''}`}
-              loading="eager"
-              decoding="async"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = defaultCover
-              }}
-            />
-          </div>
+          <HeroCarousel isEixao={isEixao} defaultCover={defaultCover} />
         </div>
       </div>
     </header>

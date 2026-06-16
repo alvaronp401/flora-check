@@ -32,10 +32,9 @@ const eventSchedules: Record<string, { time: string; activity: string }[]> = {
     { time: 'A definir', activity: 'Encerramento e feedback do treinador' }
   ],
   'alongamento-corrida-eixao-sul': [
-    { time: '08:00', activity: 'Encontro no Eixão Sul' },
-    { time: '08:10', activity: 'Alongamento em grupo com Prof. Jonathas Armiliato' },
-    { time: '08:30', activity: 'Corrida/caminhada em grupo' },
-    { time: '09:20', activity: 'Café coletivo: leve sua canga' },
+    { time: '07:00', activity: 'Concentração na 112 SUL' },
+    { time: '07:30', activity: 'Início: Alongamento e Corrida/Caminhada' },
+    { time: '09:30', activity: 'Sorteios de parceiros e Café coletivo' },
     { time: '10:00', activity: 'Encerramento e fotos' }
   ],
   'poco-azul-28-06': [

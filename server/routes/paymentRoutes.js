@@ -21,7 +21,7 @@ router.post('/registrations',
     body('emergencyPhone').isLength({ min: 10 }).withMessage('Telefone de emergencia invalido.'),
     body('bloodType').notEmpty().withMessage('Tipo sanguineo obrigatorio.'),
     body('gender').notEmpty().withMessage('Genero obrigatorio.'),
-    body('shirtSize').notEmpty().withMessage('Tamanho da camiseta obrigatorio.'),
+    body('shirtSize').optional({ nullable: true }),
     body('couponCode').optional({ nullable: true }).isLength({ max: 64 }).withMessage('Cupom invalido.'),
   ],
   async (req, res) => {

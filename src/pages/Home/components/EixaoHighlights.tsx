@@ -1,9 +1,19 @@
 import React from 'react'
-import { Coffee, Footprints, MapPinned, Sparkles } from 'lucide-react'
+import { Coffee, Footprints, MapPinned } from 'lucide-react'
+
+const StretchingIcon = ({ size = 24, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <circle cx="12" cy="5" r="2"/>
+    <path d="M12 7v7"/>
+    <path d="M8 10l4-3 4 3"/>
+    <path d="M12 14l-4 7"/>
+    <path d="M12 14l4 7"/>
+  </svg>
+)
 
 const highlights = [
   {
-    icon: Sparkles,
+    icon: StretchingIcon,
     title: 'Alongamento guiado',
     text: 'Um comeco leve para acordar o corpo, soltar a respiracao e entrar no ritmo do grupo.',
   },
@@ -70,16 +80,20 @@ export const EixaoHighlights: React.FC = () => {
             </div>
             <div>
               <p className="text-xs font-black uppercase tracking-[0.25em] text-sky-300">
-                Ponto de encontro
+                Ponto de concentração
               </p>
               <p className="text-lg font-black uppercase tracking-tight text-white">
-                Eixao Sul - 21/06 as 08h
+                112 SUL - 21/06 as 07h
               </p>
             </div>
           </div>
-          <p className="text-sm font-bold text-sky-100/70">
-            Leve sua canga. O cafe depois do treino faz parte da experiencia.
-          </p>
+          <div className="flex flex-col items-start md:items-end text-sm font-bold text-sky-100/70 md:text-right">
+            <p>3km até a estação 108</p>
+            <p>4km até a estação 106</p>
+            <p className="mt-2 text-xs font-medium opacity-80 text-sky-200">
+              Leve sua canga. O café depois do treino faz parte da experiência.
+            </p>
+          </div>
         </div>
       </div>
     </section>

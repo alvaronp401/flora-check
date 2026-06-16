@@ -31,7 +31,7 @@ const checkoutSchema = yup.object({
   bloodType: yup.string().required('Selecione seu tipo sanguíneo'),
   medication: yup.string(),
   gender: yup.string().required('Selecione o gênero'),
-  shirtSize: yup.string().required('Selecione o tamanho da camiseta'),
+  shirtSize: yup.string(),
   terms: yup.boolean().oneOf([true], 'Você deve aceitar os termos'),
 }).required()
 
@@ -56,6 +56,14 @@ export default function Checkout() {
   })
   const navigate = useNavigate() // 🚀 Para redirecionar
   const BASE_PRICE = eventStatus.currentLot?.price || 110.00
+
+  // 🎨 Tema Premium Fixo (Padrão Ouro)
+  const isEixao = eventStatus?.slug === 'alongamento-corrida-eixao-sul';
+  const themeAccent = 'text-[#D4B996]';
+  const themeBg = 'bg-[#1A0F0A]';
+  const themeBorder = 'border-white/10';
+  const themeButton = 'bg-[#D4B996] text-[#1A0F0A] hover:bg-[#E5CBA7]';
+  const themeSelection = 'border-[#1A0F0A] bg-[#1A0F0A]/5';
 
   // 📡 Buscar status e Gerenciar Timer Persistente
   useEffect(() => {
@@ -232,7 +240,7 @@ export default function Checkout() {
           emergencyPhone: data.emergencyPhone,
           bloodType: data.bloodType,
           gender: data.gender,
-          shirtSize: data.shirtSize,
+          shirtSize: data.shirtSize || null,
           medication: data.medication || '',
           couponCode: appliedCoupon?.code || null,
         })
@@ -298,8 +306,8 @@ export default function Checkout() {
               Infelizmente todas as vagas para o <span className="font-bold text-[#1A0F0A]">{eventStatus.title || 'evento'}</span> foram preenchidas.
             </p>
           </div>
-          <Link to="/" className="block">
-            <Button variant="secondary" className="w-full h-16 text-lg">Voltar para Home</Button>
+          <Link to={`/evento/${eventStatus?.slug || 'alongamento-corrida-eixao-sul'}`} className="block">
+            <Button variant="secondary" className="w-full h-16 text-lg">Voltar para o Evento</Button>
           </Link>
         </div>
       </div>
@@ -309,7 +317,7 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-[#FDFBF9] pb-20">
       {/* ⏳ Header de Urgência Fixo */}
-      <div className="sticky top-0 z-50 bg-[#1A0F0A] text-white py-3 px-6 shadow-2xl overflow-hidden">
+      <div className={`sticky top-0 z-50 ${themeBg} text-white py-3 px-6 shadow-2xl overflow-hidden transition-colors duration-500`}>
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={`w-2 h-2 rounded-full ${timeLeft < 60 ? 'bg-red-500 animate-ping' : 'bg-green-500'}`} />
@@ -318,7 +326,7 @@ export default function Checkout() {
           <div className="flex items-center gap-6">
             <div className="flex flex-col items-end">
               <span className="text-[8px] text-gray-500 font-bold uppercase">Tempo Restante</span>
-              <span className={`text-sm font-black tabular-nums ${timeLeft < 60 ? 'text-red-500 animate-pulse' : 'text-[#D4B996]'}`}>
+              <span className={`text-sm font-black tabular-nums ${timeLeft < 60 ? 'text-red-500 animate-pulse' : themeAccent}`}>
                 {formatTime(timeLeft)}
               </span>
             </div>
@@ -326,7 +334,7 @@ export default function Checkout() {
             <div className="flex flex-col items-end">
               <span className="text-[8px] text-gray-500 font-bold uppercase">Vagas Restantes</span>
               <span className="text-sm font-black text-white">
-                {eventStatus.available} <span className="text-[10px] text-gray-500">/ 50</span>
+                {eventStatus.available} <span className="text-[10px] text-gray-500">/ {eventStatus.capacity || 50}</span>
               </span>
             </div>
           </div>
@@ -339,9 +347,12 @@ export default function Checkout() {
       </div>
 
       <div className="max-w-2xl mx-auto px-6 pt-12">
-        <Link to="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-[#1A0F0A] transition-colors mb-12 group">
+        <Link 
+          to={`/evento/${eventStatus?.slug || 'alongamento-corrida-eixao-sul'}`} 
+          className="inline-flex items-center gap-2 text-gray-400 hover:text-[#1A0F0A] transition-colors mb-12 group"
+        >
           <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="text-xs font-black uppercase tracking-widest">Voltar para Home</span>
+          <span className="text-xs font-black uppercase tracking-widest">Voltar para o Evento</span>
         </Link>
 
         <div className="mb-6">
@@ -377,7 +388,7 @@ export default function Checkout() {
                 <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Tipo Sanguíneo</h2>
                 <div className="grid grid-cols-4 gap-2">
                   {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => (
-                    <label key={t} className={`cursor-pointer flex items-center justify-center h-12 rounded-xl border-2 transition-all ${watch('bloodType') === t ? 'border-[#1A0F0A] bg-[#1A0F0A]/5' : 'border-gray-50 hover:border-gray-200'}`}>
+                    <label key={t} className={`cursor-pointer flex items-center justify-center h-12 rounded-xl border-2 transition-all ${watch('bloodType') === t ? 'border-[#1A0F0A] bg-[#1A0F0A]/5' : 'border-gray-200 hover:border-gray-300'}`}>
                       <input type="radio" value={t} {...register('bloodType')} className="hidden" />
                       <span className={`text-[10px] font-black uppercase tracking-widest ${watch('bloodType') === t ? 'text-[#1A0F0A]' : 'text-gray-400'}`}>{t}</span>
                     </label>
@@ -406,24 +417,28 @@ export default function Checkout() {
               <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6">Gênero</h2>
               <div className="grid grid-cols-2 gap-4">
                 {['Masculino', 'Feminino'].map((g) => (
-                  <label key={g} className={`cursor-pointer group relative flex items-center justify-center p-4 rounded-2xl border-2 transition-all ${watch('gender') === g ? 'border-[#1A0F0A] bg-[#1A0F0A]/5' : 'border-gray-50 hover:border-gray-200'}`}>
+                  <label key={g} className={`cursor-pointer group relative flex items-center justify-center p-4 rounded-2xl border-2 transition-all ${watch('gender') === g ? themeSelection : 'border-gray-200 hover:border-gray-300'}`}>
                     <input type="radio" value={g} {...register('gender')} className="hidden" />
                     <span className={`text-xs font-black uppercase tracking-widest ${watch('gender') === g ? 'text-[#1A0F0A]' : 'text-gray-400'}`}>{g}</span>
                   </label>
                 ))}
               </div>
             </div>
-            <div>
-              <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6">Tamanho da Camiseta</h2>
-              <div className="grid grid-cols-5 gap-3">
-                {['PP', 'P', 'M', 'G', 'GG'].map((s) => (
-                  <label key={s} className={`cursor-pointer flex items-center justify-center h-12 rounded-xl border-2 transition-all ${watch('shirtSize') === s ? 'border-[#1A0F0A] bg-[#1A0F0A]/5' : 'border-gray-50 hover:border-gray-200'}`}>
-                    <input type="radio" value={s} {...register('shirtSize')} className="hidden" />
-                    <span className={`text-xs font-black uppercase tracking-widest ${watch('shirtSize') === s ? 'text-[#1A0F0A]' : 'text-gray-400'}`}>{s}</span>
-                  </label>
-                ))}
+            
+            {/* 🛡️ Esconder Camiseta se for Eixão */}
+            {!isEixao && (
+              <div>
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6">Tamanho da Camiseta</h2>
+                <div className="grid grid-cols-5 gap-3">
+                  {['PP', 'P', 'M', 'G', 'GG'].map((s) => (
+                    <label key={s} className={`cursor-pointer flex items-center justify-center h-12 rounded-xl border-2 transition-all ${watch('shirtSize') === s ? themeSelection : 'border-gray-50 hover:border-gray-200'}`}>
+                      <input type="radio" value={s} {...register('shirtSize')} className="hidden" />
+                      <span className={`text-xs font-black uppercase tracking-widest ${watch('shirtSize') === s ? 'text-[#1A0F0A]' : 'text-gray-400'}`}>{s}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
@@ -431,7 +446,7 @@ export default function Checkout() {
             <div className="flex gap-4">
               <div className="relative flex-1">
                 <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
-                <input type="text" placeholder="DIGITE SEU CÓDIGO" value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-black transition-all text-xs font-black uppercase tracking-widest" />
+                <input type="text" placeholder="DIGITE SEU CÓDIGO" value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} className="w-full bg-gray-50 border-2 border-gray-200 hover:border-gray-300 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-[#1A0F0A]/5 focus:border-[#1A0F0A] transition-all text-xs font-black uppercase tracking-widest" />
               </div>
               <Button type="button" variant="outline" onClick={handleApplyCoupon} disabled={!couponInput || isValidatingCoupon} className="px-8">
                 {isValidatingCoupon ? '...' : 'Aplicar'}
@@ -459,17 +474,20 @@ export default function Checkout() {
               </div>
             )}
             
-            <div className="h-px bg-white/10 my-6" />
-
             {/* 🛡️ Exibição das Taxas (Seguro Aventura) */}
-            <div className="space-y-4">
-              {eventStatus.fees?.map((fee: any) => (
-                <div key={fee.id} className="flex justify-between items-center">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{fee.name}</span>
-                  <span className="text-white font-black text-sm whitespace-nowrap">R$ {fee.price.toFixed(2)}</span>
+            {eventStatus.fees && eventStatus.fees.length > 0 && (
+              <>
+                <div className="h-px bg-white/10 my-6" />
+                <div className="space-y-4">
+                  {eventStatus.fees.map((fee: any) => (
+                    <div key={fee.id} className="flex justify-between items-center">
+                      <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{fee.name}</span>
+                      <span className="text-white font-black text-sm whitespace-nowrap">R$ {fee.price.toFixed(2)}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
 
             <div className="h-px bg-white/10 mt-6 mb-8" />
             <div className="flex justify-between items-end">
@@ -491,8 +509,9 @@ export default function Checkout() {
               )}
               <Button 
                 type="submit" 
+                variant="secondary"
                 disabled={isSubmitting || eventStatus.is_sold_out} 
-                className={`w-full h-16 text-lg shadow-xl ${eventStatus.is_sold_out ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-[#D4B996] text-[#1A0F0A] hover:bg-[#E5CBA7]'}`}
+                className={`w-full h-16 text-lg shadow-xl ${eventStatus.is_sold_out ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ''}`}
               >
                 {isSubmitting ? 'Processando...' : eventStatus.is_sold_out ? 'Vagas Esgotadas' : 'Ir para o Pagamento'}
               </Button>

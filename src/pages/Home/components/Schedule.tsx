@@ -26,10 +26,9 @@ const eventSchedules: Record<string, { time: string; event: string }[]> = {
     { time: 'A definir', event: 'Encerramento e feedback do treinador' },
   ],
   'alongamento-corrida-eixao-sul': [
-    { time: '08:00', event: 'Encontro no Eixao Sul' },
-    { time: '08:10', event: 'Alongamento em grupo com Prof. Jonathas Armiliato' },
-    { time: '08:30', event: 'Corrida/caminhada em grupo' },
-    { time: '09:20', event: 'Cafe coletivo: leve sua canga' },
+    { time: '07:00', event: 'Concentração na 112 SUL' },
+    { time: '07:30', event: 'Início: Alongamento e Corrida/Caminhada' },
+    { time: '09:30', event: 'Sorteios de parceiros e Café coletivo' },
     { time: '10:00', event: 'Encerramento e fotos' },
   ],
   'poco-azul-28-06': [
@@ -132,7 +131,9 @@ export const Schedule: React.FC<ScheduleProps> = ({ eventId, slug }) => {
             ))}
           </div>
 
+          {/* Comentado pois os parceiros foram movidos para o FooterCTA
           <PartnersCarousel />
+          */}
 
           <div className="mt-8 flex w-full flex-col items-center border-t border-slate-100 pb-4 pt-8">
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">

@@ -1,8 +1,11 @@
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import atleta1 from '../../../assets/atleta1.png'
 import atleta2 from '../../../assets/atleta2.png'
 import atleta3 from '../../../assets/atleta3.png'
+import parceiro6 from '../../../assets/parceiro6.png'
+import parceiro10 from '../../../assets/parceiro10.png'
 import type { EventStatus } from '../types'
 
 interface FooterCTAProps {
@@ -24,6 +27,7 @@ export const FooterCTA: React.FC<FooterCTAProps> = ({ eventId, eventStatus, slug
       <div className={`absolute bottom-0 right-1/4 -z-10 h-96 w-96 rounded-full blur-[120px] ${isEixao ? 'bg-sky-300/10' : 'bg-[#D4B996]/10'}`} />
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
+        {/* Comentando o carrossel de participantes como solicitado
         <div className="mb-10 inline-flex items-center gap-4 rounded-full border border-white/10 bg-white/5 px-8 py-4 backdrop-blur-sm">
           <div className="flex -space-x-3">
             {[atleta1, atleta2, atleta3].map((atleta, i) => (
@@ -40,6 +44,7 @@ export const FooterCTA: React.FC<FooterCTAProps> = ({ eventId, eventStatus, slug
             + de 20 participantes confirmados
           </p>
         </div>
+        */}
 
         <h2 className="mb-8 text-4xl font-black uppercase leading-none tracking-tighter text-white md:text-7xl">
           {isEixao ? 'DOMINGO COM MOVIMENTO' : 'A PROXIMA SUPERACAO'} <br />
@@ -74,7 +79,40 @@ export const FooterCTA: React.FC<FooterCTAProps> = ({ eventId, eventStatus, slug
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto mt-20 flex max-w-6xl flex-col items-center gap-8 border-t border-white/10 px-6 pt-10">
+      <div className="relative z-10 mx-auto mt-20 flex max-w-6xl flex-col items-center gap-12 border-t border-white/10 px-6 pt-16">
+        
+        {/* Sessão de Parceiros Oficiais */}
+        <div className="flex flex-col items-center gap-8 w-full max-w-3xl">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+            Nossos Parceiros Oficiais
+          </p>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-12 md:gap-24 w-full">
+            {/* Parceiro 1: Laboratório Viver Bem */}
+            <div className="flex items-center gap-6 group">
+              <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full border-2 border-white/5 bg-white/5 group-hover:border-[#D4B996]/30 transition-all overflow-hidden">
+                <img src={parceiro10} alt="Laboratório Viver Bem" className="h-full w-full object-contain p-2" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Laboratório</span>
+                <span className="text-xl font-black uppercase tracking-wider text-gray-300 group-hover:text-white transition-colors">Viver Bem</span>
+              </div>
+            </div>
+
+            {/* Parceiro 2: Rica Be Coffee */}
+            <div className="flex items-center gap-6 group">
+              <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full border-2 border-white/5 bg-white/5 group-hover:border-[#D4B996]/30 transition-all overflow-hidden">
+                <img src={parceiro6} alt="Rica Be Coffee" className="h-full w-full object-contain p-2" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">Rica Be</span>
+                <span className="text-xl font-black uppercase tracking-wider text-gray-300 group-hover:text-white transition-colors">Coffee</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="h-px w-full max-w-sm bg-linear-to-r from-transparent via-white/10 to-transparent mt-4 mb-4" />
+
         <p className="text-center text-[9px] font-bold uppercase leading-loose tracking-widest text-gray-500 md:text-[10px]">
           2026 Trail & Run Club - CNPJ: 63.031.213/0001-09 <br /> Todos os direitos reservados
         </p>

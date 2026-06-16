@@ -69,13 +69,14 @@ type EventCard = {
 
 // Helper para obter descrições simplificadas e objetivas de treinos de junho (Clean UI / Senior Mode)
 const getSimplifiedDescription = (slug: string, defaultDesc: string) => {
-  const simplified: Record<string, string> = {
+  const EVENT_DESCRIPTIONS: Record<string, string> = {
+    'trail-run-flona-2026': 'A principal experiência de corrida em trilha do Centro-Oeste.',
+    'alongamento-corrida-eixao-sul': 'Alongamento + corrida/caminhada em grupo. Leve sua canga e vamos tomar café juntos. ⚠️ Sorteio de Parceiros!',
     'toneis-13-06': 'Treino prático com check-in e check-out programados na natureza.',
     'treino-jonathas-aguas-claras': 'Treino técnico orientado com foco em subidas, descidas e postura.',
-    'alongamento-corrida-eixao-sul': 'Alongamento + corrida/caminhada em grupo. Leve sua canga e vamos tomar café juntos.',
     'poco-azul-28-06': 'Treino técnico de trail running com subidas no cenário do Poço Azul.'
   }
-  return simplified[slug] || defaultDesc
+  return EVENT_DESCRIPTIONS[slug] || defaultDesc
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
