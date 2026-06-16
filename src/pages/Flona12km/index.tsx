@@ -33,6 +33,7 @@ import waImg5     from '../../assets/trilha_flona_5.jpeg'
 // Configure VITE_FLONA_12KM_EVENT_ID com o UUID retornado pelo script do Supabase.
 // ─────────────────────────────────────────────────────────────────────────────
 const FLONA_12KM_EVENT_ID = import.meta.env.VITE_FLONA_12KM_EVENT_ID || ''
+const REGISTRATION_CLOSED = true
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DADOS ESTÁTICOS
@@ -90,6 +91,12 @@ const Flona12km: React.FC = () => {
 
   // ── Busca status de vagas ──
   useEffect(() => {
+    if (REGISTRATION_CLOSED) {
+      setEventStatus({ available: 0, occupied: 20, currentLot: { name: 'ENCERRADO', price: 30 }, is_sold_out: true, capacity: 20 })
+      setIsLoadingStatus(false)
+      return
+    }
+
     const isReal = Boolean(FLONA_12KM_EVENT_ID)
     if (!isReal) {
       setEventStatus({ available: 20, occupied: 0, currentLot: { name: 'PRIMEIRO', price: 30 }, is_sold_out: false, capacity: 20 })
@@ -135,6 +142,7 @@ const Flona12km: React.FC = () => {
 
   const onSubmit = async (data: IForm) => {
     setSubmitError('')
+    if (REGISTRATION_CLOSED) { setSubmitError('Inscrições encerradas para este evento.'); return }
     if (!eventStatus || eventStatus.available <= 0) { setSubmitError('Todas as vagas foram preenchidas.'); return }
     if (!FLONA_12KM_EVENT_ID) { setSubmitError('O evento está sendo configurado. Tente em instantes.'); return }
     try {
@@ -171,6 +179,10 @@ const Flona12km: React.FC = () => {
   }
 
   const openForm = () => {
+    if (REGISTRATION_CLOSED) {
+      document.getElementById('inscricao')?.scrollIntoView({ behavior: 'smooth' })
+      return
+    }
     setShowForm(true)
     setTimeout(() => document.getElementById('inscricao')?.scrollIntoView({ behavior: 'smooth' }), 100)
   }
@@ -228,9 +240,14 @@ const Flona12km: React.FC = () => {
           </Link>
           <button
             onClick={openForm}
-            className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-green-500 hover:bg-green-400 text-black text-xs font-black uppercase tracking-wider rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-green-900/30"
+            disabled={REGISTRATION_CLOSED}
+            className={`hidden md:flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider rounded-xl transition-all ${
+              REGISTRATION_CLOSED
+                ? 'bg-white/10 text-white/45 border border-white/10 cursor-not-allowed'
+                : 'bg-green-500 hover:bg-green-400 text-black hover:scale-[1.02] shadow-lg shadow-green-900/30'
+            }`}
           >
-            Garantir Vaga — R$ {price}
+            {REGISTRATION_CLOSED ? 'Inscrições Encerradas' : `Garantir Vaga — R$ ${price}`}
           </button>
         </div>
       </header>
@@ -251,6 +268,11 @@ const Flona12km: React.FC = () => {
               </svg>
               Domingo, 14 de Junho · 07h30
             </div>
+            {REGISTRATION_CLOSED && (
+              <div className="mb-5 w-fit rounded-full border border-red-500/25 bg-red-500/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-widest text-red-400">
+                Inscrições encerradas
+              </div>
+            )}
 
             <h1 className="text-[3.5rem] md:text-[5rem] font-black leading-[0.9] tracking-tight uppercase mb-5">
               Trilha<br />
@@ -286,10 +308,15 @@ const Flona12km: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={openForm}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-400 text-black font-black text-sm uppercase tracking-wider rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-green-900/30"
+                disabled={REGISTRATION_CLOSED}
+                className={`flex items-center justify-center gap-2 px-8 py-4 font-black text-sm uppercase tracking-wider rounded-xl transition-all ${
+                  REGISTRATION_CLOSED
+                    ? 'bg-white/10 text-white/45 border border-white/10 cursor-not-allowed'
+                    : 'bg-green-500 hover:bg-green-400 text-black hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-green-900/30'
+                }`}
               >
-                Quero participar — R$ {price}
-                <ChevronRight className="w-4 h-4" />
+                {REGISTRATION_CLOSED ? 'Inscrições Encerradas' : `Quero participar — R$ ${price}`}
+                {!REGISTRATION_CLOSED && <ChevronRight className="w-4 h-4" />}
               </button>
               <div className="flex flex-col gap-1.5 text-[11px] text-white/35 font-medium">
                 <div className="flex items-center gap-1.5">
@@ -574,17 +601,25 @@ const Flona12km: React.FC = () => {
         <div className="max-w-lg mx-auto px-6">
 
           <div className="mb-8">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-green-400 mb-2">Apenas 20 vagas</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-red-400 mb-2">
+              {REGISTRATION_CLOSED ? 'Inscrições encerradas' : 'Apenas 20 vagas'}
+            </p>
             <h2 className="text-3xl font-black uppercase tracking-tight mb-2">
-              Garanta sua vaga
+              {REGISTRATION_CLOSED ? 'Inscrições encerradas' : 'Garanta sua vaga'}
             </h2>
-            <p className="text-white/40 text-sm">Pagamento seguro via Mercado Pago. Pix, cartão ou boleto.</p>
+            <p className="text-white/40 text-sm">
+              {REGISTRATION_CLOSED
+                ? 'As vagas para este encontro foram encerradas. Fique atento aos próximos eventos.'
+                : 'Pagamento seguro via Mercado Pago. Pix, cartão ou boleto.'}
+            </p>
           </div>
 
           {/* Card de preço */}
           <div className="rounded-2xl border border-green-500/20 bg-green-500/5 px-6 py-5 mb-7 flex items-center justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-green-400">1º Lote — inscrição + sorteio</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-green-400">
+                {REGISTRATION_CLOSED ? 'Inscrições encerradas' : '1º Lote — inscrição + sorteio'}
+              </p>
               <p className="text-4xl font-black text-white mt-1">R$ {price}<span className="text-lg text-white/30">,00</span></p>
             </div>
             <div className="text-right text-[11px] text-white/35 font-medium leading-relaxed">
@@ -595,8 +630,8 @@ const Flona12km: React.FC = () => {
           {/* Vagas esgotadas */}
           {eventStatus?.is_sold_out && (
             <div className="rounded-2xl border border-red-500/20 bg-red-500/8 p-6 text-center mb-7">
-              <p className="text-base font-black text-red-400 uppercase tracking-wider mb-1">Vagas esgotadas</p>
-              <p className="text-sm text-white/40">Fique atento ao próximo evento.</p>
+              <p className="text-base font-black text-red-400 uppercase tracking-wider mb-1">Inscrições encerradas</p>
+              <p className="text-sm text-white/40">O checkout foi desativado para este evento.</p>
             </div>
           )}
 

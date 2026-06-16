@@ -34,6 +34,10 @@ const HIDDEN_HOME_EVENT_SLUGS = new Set([
   'treino-jonathas-aguas-claras',
 ])
 
+const CLOSED_HOME_EVENT_SLUGS = new Set([
+  'flona-12km-04-06',
+])
+
 // Tipo estendido com o campo isStatic opcional
 type EventCard = {
   id: string
@@ -106,10 +110,7 @@ export const Agenda: React.FC = () => {
       .then((data: EventCard[]) => {
         // Regra Sênior 🧠: Buscamos o status de vagas real (do banco) para o evento da Flona 
         // e aplicamos no card estático antes de filtrá-lo.
-        const realEvent = data.find(e => e.slug === 'flona-12km')
-        if (realEvent) {
-          FLONA_12KM_STATIC.is_sold_out = realEvent.is_sold_out || false
-        }
+        FLONA_12KM_STATIC.is_sold_out = CLOSED_HOME_EVENT_SLUGS.has(FLONA_12KM_STATIC.slug)
 
         // Regra Sênior 🧠: Ocultamos a versão dinâmica 'flona-12km' da agenda pública, 
         // mas mantemos ela ativa no banco de dados para poder gerenciar as inscrições e lotes no Painel.
@@ -330,7 +331,7 @@ export const Agenda: React.FC = () => {
                       to={cardLink}
                       className="w-full h-14 rounded-2xl bg-[#D4B996]/10 text-[#D4B996] hover:bg-[#D4B996] hover:text-[#110A06] font-bold flex items-center justify-center gap-2 transition-all duration-300 group/btn border border-[#D4B996]/20 hover:border-transparent text-sm tracking-wider uppercase"
                     >
-                      {event.isStatic ? 'Garantir Vaga' : 'Ver Detalhes'}
+                      {event.is_sold_out ? 'Inscrições Encerradas' : event.isStatic ? 'Garantir Vaga' : 'Ver Detalhes'}
                       <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                     </Link>
                   </div>
