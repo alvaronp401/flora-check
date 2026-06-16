@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Calendar, MapPin, Users, ChevronRight, Award, Leaf } from 'lucide-react'
+import { Calendar, MapPin, Users, ChevronRight, Award, Leaf, Star } from 'lucide-react'
 import { API_URL } from '../../config/api'
 import flonaCover from '../../assets/runner.png' // Capa original da atleta correndo na floresta (recuperada do Git)
 import johnImg from '../../assets/colaborador1.png'
 import aleImg from '../../assets/colaborador3.png'
+import parceiro6Img from '../../assets/parceiro6.png'
+import parceiro10Img from '../../assets/parceiro10.png'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 📌 CONCEITO SÊNIOR: "Static Data for Non-API Cards"
@@ -22,7 +24,7 @@ const FLONA_12KM_STATIC = {
   image_url: '',                    // sem imagem da API — usamos o flonaCover
   capacity: 20,                     // 20 participantes (Atletas Founders)
   is_active: true,
-  is_sold_out: false,
+  is_sold_out: true,
   price: 30.00,
   isStatic: true,                  // flag para distinguir de eventos da API
 }
@@ -53,6 +55,27 @@ const getSimplifiedDescription = (slug: string, defaultDesc: string) => {
   }
   return simplified[slug] || defaultDesc
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 📌 CONCEITO: "Mock Data / Constantes"
+// Separamos os depoimentos em uma constante fora do componente.
+// Por que? Porque eles não mudam com o tempo. Não precisam estar dentro
+// do fluxo de renderização do React (useState, etc.). Isso economiza memória!
+// ─────────────────────────────────────────────────────────────────────────────
+const TESTIMONIALS = [
+  { name: 'Thainara', text: 'Quero agradecer a todos os envolvidos na organização e participação. Eu A D O R E I! A dedicação e o empenho de cada um fizeram toda a diferença. Já estou ansiosa pela próxima trilha. 🌿' },
+  { name: 'Katia Maia', text: 'Fantástica vivência com todos, nessa maravilhosa trilha. Nossa primeira trilha! Eu e meu esposo amamos!!! Esse grupo é excelente de uma grande organização e carinho. Gratidão por tudo.' },
+  { name: 'Gizele Costa', text: 'Vocês foram fantásticos, evento maravilhoso.... precisamos de um outro evento desse com urgência 🥰' },
+  { name: 'Maria Feijoada', text: 'Quero agradecer ao Jonathan e aos outros integrantes da organização da trilha. Foi surreal. Amei, que venha a próxima.' },
+  { name: 'Sabryna Vieira', text: 'A trilha foi perfeita! Foi minha primeira, minha mãe que me levou! Amei muito, com certeza quero fazer mais. Foi tudo muito organizado, todo mundo muito respeitoso e responsável, obrigada pela manhã maravilhosa ❤️' },
+  { name: 'Erly Carvalho', text: 'Perfeito!!! Muito bem organizado... Descontração, alma lavada pela paisagem. Maravilhoso JONATHAS e equipe. Parabéns e obrigada pela oportunidade de ter estado com vocês.' },
+  { name: 'Mônica', text: 'Amei a nossa manhã! Só elogios! Estava tudo muito organizado e acolhedor. Adorei meu kit, tudo delicado e preparado com carinho.' },
+  { name: 'Joelma Cunha', text: 'Eu amei tudo, nada a reclamar, só agradecer por essa experiência maravilhosa e com pessoas muito legais. Gratidão e até a próxima.' },
+  { name: 'Jennifer Armiliato', text: 'Tudo incrível! 🤩 Parabénsss pelo evento time Trail Run Club. Já queremos o próximo.' },
+  { name: 'Morgana Costa', text: 'Foi uma manhã maravilhosa! Amei conhecer a Flona! Parabéns pela organização.' },
+  { name: 'Patricia Gomes', text: 'Foi maravilhoso! Obrigado por uma manhã maravilhosa 🥰💪❤️' },
+  { name: 'Benvinda Teixeira', text: 'Valei muito participar da trilha! Amei 🙏🌹🥰' }
+]
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 📌 CONCEITO: Removemos a 'interface Event' daqui porque já definimos o tipo
@@ -239,7 +262,7 @@ export const Agenda: React.FC = () => {
                         <div className="absolute top-4 left-4">
                           {event.is_sold_out ? (
                             <span className="px-3 py-1 bg-red-950/80 backdrop-blur-md border border-red-500/30 rounded-full text-[10px] font-bold tracking-widest uppercase text-red-400">
-                              Vagas Esgotadas
+                              Inscrições Encerradas
                             </span>
                           ) : event.isStatic ? (
                             // Badge especial para evento estático (Flona 12km)
@@ -314,6 +337,93 @@ export const Agenda: React.FC = () => {
         )}
       </main>
 
+      {/* ══ DEPOIMENTOS (ADAPTADO PARA TEMA HOME PREMIUM) ══ */}
+      {/* 📌 CONCEITO: Reutilização de código com adaptação de contexto. 
+          Pegamos o carrossel da Flona e trocamos as classes Tailwind para as cores
+          primárias da Home (#D4B996). Assim mantemos a identidade visual intacta! */}
+      <section className="relative z-10 border-t border-white/5 py-24 bg-[#0B0705]">
+        <div className="max-w-7xl mx-auto px-6 mb-16 text-center">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-[#D4B996] mb-3">O que dizem</p>
+          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">
+            Quem foi, <span className="text-[#D4B996] drop-shadow-[0_2px_15px_rgba(212,185,150,0.3)]">voltou diferente</span>
+          </h2>
+        </div>
+
+        {/* Estilos locais para o carrossel infinito (Marquee) */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes marquee-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          @keyframes marquee-right {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+          }
+          .animate-marquee-left {
+            animation: marquee-left 50s linear infinite;
+          }
+          .animate-marquee-right {
+            animation: marquee-right 50s linear infinite;
+          }
+          .animate-marquee-left:hover,
+          .animate-marquee-right:hover {
+            animation-play-state: paused;
+          }
+        `}} />
+
+        <div className="relative w-full overflow-hidden py-4 flex flex-col gap-8">
+          {/* Degradê de fade-out nas laterais */}
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-linear-to-r from-[#0B0705] to-transparent z-20 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-linear-to-l from-[#0B0705] to-transparent z-20 pointer-events-none" />
+
+          {/* Fileira 1: Roda para a esquerda */}
+          <div className="flex overflow-hidden w-full select-none gap-6">
+            <div className="flex gap-6 w-max animate-marquee-left">
+              {TESTIMONIALS.slice(0, 6).concat(TESTIMONIALS.slice(0, 6)).map((t, i) => (
+                <div key={`r1-${i}`} className="w-80 md:w-96 shrink-0 flex flex-col bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:border-[#D4B996]/30 hover:bg-white/[0.07] transition-all duration-500 shadow-2xl">
+                  <div className="flex gap-1 mb-5">
+                    {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 text-[#D4B996] fill-[#D4B996]" />)}
+                  </div>
+                  <p className="text-gray-300 text-sm md:text-base leading-relaxed mb-6 flex-1 font-medium">"{t.text}"</p>
+                  <div className="mt-auto flex items-center gap-4 pt-6 border-t border-white/5">
+                    <div className="w-10 h-10 rounded-full bg-[#D4B996]/10 border border-[#D4B996]/20 flex items-center justify-center text-sm font-black text-[#D4B996] uppercase shadow-inner">
+                      {t.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">{t.name}</p>
+                      <p className="text-[10px] text-[#D4B996] uppercase tracking-widest font-bold opacity-80">Atleta Founder</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Fileira 2: Roda para a direita */}
+          <div className="flex overflow-hidden w-full select-none gap-6">
+            <div className="flex gap-6 w-max animate-marquee-right">
+              {TESTIMONIALS.slice(6, 12).concat(TESTIMONIALS.slice(6, 12)).map((t, i) => (
+                <div key={`r2-${i}`} className="w-80 md:w-96 shrink-0 flex flex-col bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:border-[#D4B996]/30 hover:bg-white/[0.07] transition-all duration-500 shadow-2xl">
+                  <div className="flex gap-1 mb-5">
+                    {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 text-[#D4B996] fill-[#D4B996]" />)}
+                  </div>
+                  <p className="text-gray-300 text-sm md:text-base leading-relaxed mb-6 flex-1 font-medium">"{t.text}"</p>
+                  <div className="mt-auto flex items-center gap-4 pt-6 border-t border-white/5">
+                    <div className="w-10 h-10 rounded-full bg-[#D4B996]/10 border border-[#D4B996]/20 flex items-center justify-center text-sm font-black text-[#D4B996] uppercase shadow-inner">
+                      {t.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">{t.name}</p>
+                      <p className="text-[10px] text-[#D4B996] uppercase tracking-widest font-bold opacity-80">Atleta Founder</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Seção de Instrutores (Adaptada para Tema Escuro Premium) */}
       <section className="border-t border-white/5 bg-[#0D0704]/40 py-24 relative z-10">
         <div className="max-w-4xl mx-auto px-6">
@@ -365,6 +475,36 @@ export const Agenda: React.FC = () => {
                   </span>
                 </a>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ PARCEIROS (FOOTER EXTRA) ══ */}
+      <section className="border-t border-white/5 bg-[#070402] py-20 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500 mb-10">Nossos Parceiros Oficiais</p>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-16 md:gap-32 opacity-70 hover:opacity-100 transition-opacity duration-500">
+            {/* Laboratório Viver Bem */}
+            <div className="flex items-center gap-4 grayscale hover:grayscale-0 transition-all duration-500 group">
+              <div className="w-16 h-16 rounded-full bg-white/5 group-hover:bg-white/10 border border-white/10 group-hover:border-white/30 flex items-center justify-center transition-all overflow-hidden p-2">
+                <img src={parceiro10Img} alt="Laboratório Viver Bem" className="w-full h-full object-contain" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black tracking-widest uppercase text-gray-400 group-hover:text-white transition-colors leading-none">Laboratório</p>
+                <p className="text-2xl font-black tracking-widest uppercase text-white group-hover:text-[#D4B996] transition-colors leading-none mt-1.5">Viver Bem</p>
+              </div>
+            </div>
+
+            {/* Rica Be Coffee */}
+            <div className="flex items-center gap-4 grayscale hover:grayscale-0 transition-all duration-500 group">
+              <div className="w-16 h-16 rounded-full bg-white/5 group-hover:bg-white/10 border border-white/10 group-hover:border-white/30 flex items-center justify-center transition-all overflow-hidden p-2">
+                <img src={parceiro6Img} alt="Rica Be Coffee" className="w-full h-full object-contain" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-black tracking-widest uppercase text-gray-400 group-hover:text-white transition-colors leading-none">Rica Be</p>
+                <p className="text-2xl font-black tracking-widest uppercase text-white group-hover:text-[#D4B996] transition-colors leading-none mt-1.5">Coffee</p>
+              </div>
             </div>
           </div>
         </div>
