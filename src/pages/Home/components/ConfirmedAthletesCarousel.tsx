@@ -3,9 +3,10 @@ import { API_URL } from '../../../config/api';
 
 interface ConfirmedAthletesCarouselProps {
   eventId: string
+  accentClassName?: string
 }
 
-export const ConfirmedAthletesCarousel: React.FC<ConfirmedAthletesCarouselProps> = ({ eventId }) => {
+export const ConfirmedAthletesCarousel: React.FC<ConfirmedAthletesCarouselProps> = ({ eventId, accentClassName = 'text-[#D4B996]' }) => {
   const [athletes, setAthletes] = useState<string[]>([]);
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export const ConfirmedAthletesCarousel: React.FC<ConfirmedAthletesCarouselProps>
 
   return (
     <div className="w-full overflow-hidden flex flex-col items-center">
-      <h3 className="text-xl md:text-2xl font-black uppercase tracking-[0.4em] text-[#D4B996] mb-8 text-center w-full">
+      <h3 className={`text-xl md:text-2xl font-black uppercase tracking-[0.4em] ${accentClassName} mb-8 text-center w-full`}>
         Atletas Confirmados
       </h3>
       
@@ -67,4 +68,3 @@ export const ConfirmedAthletesCarousel: React.FC<ConfirmedAthletesCarouselProps>
     </div>
   );
 };
-

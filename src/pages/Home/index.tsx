@@ -5,14 +5,16 @@ import { Hero } from './components/Hero'
 import { Schedule } from './components/Schedule'
 import { Kit } from './components/Kit'
 import { FooterCTA } from './components/FooterCTA'
+import { EixaoHighlights } from './components/EixaoHighlights'
 import { API_URL } from '../../config/api'
+import type { EventData, EventStatus } from './types'
 
 const FULL_PAGE_EVENT_SLUGS = new Set([
   'trail-run-flona-2026',
   'alongamento-corrida-eixao-sul',
 ])
 
-const EVENT_OVERRIDES: Record<string, any> = {
+const EVENT_OVERRIDES: Record<string, Partial<EventData>> = {
   'alongamento-corrida-eixao-sul': {
     title: 'Aulão no Eixão Sul',
     description: 'Alongamento + corrida/caminhada em grupo às 8h com Prof. Jonathas Armiliato. Leve sua canga e vamos tomar café juntos depois do movimento.',
@@ -25,8 +27,8 @@ const Home: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   
-  const [event, setEvent] = useState<any>(null)
-  const [eventStatus, setEventStatus] = useState<any>(null)
+  const [event, setEvent] = useState<EventData | null>(null)
+  const [eventStatus, setEventStatus] = useState<EventStatus | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -42,7 +44,7 @@ const Home: React.FC = () => {
         if (!eventRes.ok) {
           throw new Error('Evento não encontrado')
         }
-        const rawEventData = await eventRes.json()
+        const rawEventData: EventData = await eventRes.json()
         const eventData = { ...rawEventData, ...EVENT_OVERRIDES[rawEventData.slug] }
         setEvent(eventData)
 
@@ -51,7 +53,7 @@ const Home: React.FC = () => {
         if (!statusRes.ok) {
           throw new Error('Falha ao buscar status do evento')
         }
-        const statusData = await statusRes.json()
+        const statusData: EventStatus = await statusRes.json()
         setEventStatus(statusData)
         setLoading(false)
       } catch (err) {
@@ -88,6 +90,10 @@ const Home: React.FC = () => {
   }
 
   // 🚀 TELA 'EM BREVE NOVIDADES' PARA NOVOS EVENTOS (JUNHO)
+  if (!event) {
+    return null
+  }
+
   if (!FULL_PAGE_EVENT_SLUGS.has(event.slug)) {
     return (
       <div className="min-h-screen bg-[#110A06] text-white selection:bg-[#D4B996] selection:text-[#110A06] relative overflow-hidden font-sans flex flex-col justify-between">
@@ -152,6 +158,10 @@ const Home: React.FC = () => {
       {/* Seção Principal (CTA & Logo) */}
       <Hero event={event} eventStatus={eventStatus} />
 
+      {event.slug === 'alongamento-corrida-eixao-sul' && (
+        <EixaoHighlights />
+      )}
+
       {/* Programação do Evento */}
       <Schedule eventId={event.id} slug={event.slug} />
 
@@ -161,7 +171,7 @@ const Home: React.FC = () => {
       )}
 
       {/* Rodapé & Chamada Final */}
-      <FooterCTA eventId={event.id} eventStatus={eventStatus} />
+      <FooterCTA eventId={event.id} eventStatus={eventStatus} slug={event.slug} />
     </div>
   )
 }

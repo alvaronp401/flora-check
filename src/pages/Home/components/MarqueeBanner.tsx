@@ -1,36 +1,39 @@
 import React from 'react'
-import { Flame } from 'lucide-react'
+import { Flame, Waves } from 'lucide-react'
+import type { EventStatus } from '../types'
 
 interface MarqueeBannerProps {
-  eventStatus: any
+  eventStatus: EventStatus | null
 }
 
 export const MarqueeBanner: React.FC<MarqueeBannerProps> = ({ eventStatus }) => {
   const lotName = eventStatus?.currentLot?.name || 'PRIMEIRO'
-  const isSoldOut = eventStatus?.is_sold_out || eventStatus?.available <= 0
+  const available = eventStatus?.available ?? 0
+  const isSoldOut = eventStatus?.is_sold_out || available <= 0
   const isEixao = eventStatus?.slug === 'alongamento-corrida-eixao-sul'
+  const Icon = isEixao ? Waves : Flame
+
+  const message = isSoldOut
+    ? 'VAGAS COMPLETAMENTE ESGOTADAS - ACOMPANHE A AGENDA DE PROXIMOS EVENTOS'
+    : isEixao
+      ? 'AULAO NO EIXAO SUL - 08H - ALONGAMENTO + CORRIDA/CAMINHADA - LEVE SUA CANGA - CAFE EM GRUPO -'
+      : `QUASE ESGOTANDO - GARANTA SUA VAGA NO ${lotName} LOTE -`
 
   const items = (
     <div className="flex items-center">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="flex items-center mx-4 md:mx-8 shrink-0">
-          <span className="text-[10px] md:text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-6">
-            <Flame size={14} className="text-orange-500 fill-orange-500" />
-            {isSoldOut ? (
-              'VAGAS COMPLETAMENTE ESGOTADAS - ACOMPANHE A AGENDA DE PRÓXIMOS EVENTOS'
-            ) : isEixao ? (
-              'AULÃO NO EIXÃO SUL - 08H - ALONGAMENTO + CORRIDA/CAMINHADA - LEVE SUA CANGA -'
-            ) : (
-              `QUASE ESGOTANDO - GARANTA SUA VAGA NO ${lotName} LOTE -`
-            )}
+        <div key={i} className="mx-4 flex shrink-0 items-center md:mx-8">
+          <span className="flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.3em] text-white md:text-xs">
+            <Icon size={14} className={isEixao ? 'text-sky-300' : 'fill-orange-500 text-orange-500'} />
+            {message}
           </span>
         </div>
       ))}
     </div>
-  );
+  )
 
   return (
-    <nav className="bg-black py-3 overflow-hidden whitespace-nowrap border-b border-white/10 sticky top-0 z-50 shadow-2xl">
+    <nav className={`sticky top-0 z-50 overflow-hidden whitespace-nowrap border-b py-3 shadow-2xl ${isEixao ? 'border-sky-300/20 bg-[#031024]' : 'border-white/10 bg-black'}`}>
       <div className="flex w-max animate-marquee hover:pause will-change-transform backface-hidden">
         {items}
         {items}
@@ -53,4 +56,3 @@ export const MarqueeBanner: React.FC<MarqueeBannerProps> = ({ eventStatus }) => 
     </nav>
   )
 }
-
