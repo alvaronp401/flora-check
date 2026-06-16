@@ -61,8 +61,6 @@ export default function Checkout() {
   const isEixao = eventStatus?.slug === 'alongamento-corrida-eixao-sul';
   const themeAccent = 'text-[#D4B996]';
   const themeBg = 'bg-[#1A0F0A]';
-  const themeBorder = 'border-white/10';
-  const themeButton = 'bg-[#D4B996] text-[#1A0F0A] hover:bg-[#E5CBA7]';
   const themeSelection = 'border-[#1A0F0A] bg-[#1A0F0A]/5';
 
   // 📡 Buscar status e Gerenciar Timer Persistente

@@ -2,7 +2,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import johnImg from '../../../assets/colaborador1.png'
 import aleImg from '../../../assets/colaborador3.png'
-import { PartnersCarousel } from './PartnersCarousel'
 import { ConfirmedAthletesCarousel } from './ConfirmedAthletesCarousel'
 
 const eventSchedules: Record<string, { time: string; event: string }[]> = {
