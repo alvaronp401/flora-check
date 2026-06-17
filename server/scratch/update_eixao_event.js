@@ -38,7 +38,7 @@ async function run() {
   // 3. Monta o Payload para a regra de negócio
   const updatePayload = {
     capacity: 30,
-    lot_prices: { lot1: 30, lot2: 35 },
+    lot_prices: { lot1: 20, lot2: 25 },
     lot_thresholds: { lot1: 15, lot2: 30 },
   };
 
