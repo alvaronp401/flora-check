@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, Calendar, MapPin, Trophy, ArrowRight } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
-const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Gzq8Rom45jm9rsFTf81jM5?s=sh&p=i&ilr=1&amv=2'
+const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/DuKDTSG323NAj8NWu68S5u'
 
 export default function Success() {
   const [searchParams] = useSearchParams()

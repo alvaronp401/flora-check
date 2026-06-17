@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/Gzq8Rom45jm9rsFTf81jM5?s=sh&p=i&ilr=1&amv=2';
+const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/DuKDTSG323NAj8NWu68S5u';
 
 function escapeHtml(value = '') {
   return String(value)
